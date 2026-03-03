@@ -8,7 +8,7 @@ Welcome to the **BorrowHub** project! This is a monorepo that contains both the 
 ## Project Structure
 
 - **[mobile-app/](./mobile-app)**: Android Mobile Application (Java, Room, MVVM).
-- **[backend-api/](./backend-api)**: Laravel Backend Service (PHP, MySQL, Service-Repository Pattern).
+- **[backend-api/](./backend-api)**: Laravel Backend Service + PostgreSQL (PHP, MySQL, Service-Repository Pattern).
 - **[docs/](./docs)**: Shared project documentation and contribution guidelines.
 
 ---

@@ -1,5 +1,5 @@
 # BorrowHub — MVVM Architecture Guide
-### Room (SQLite) + Java Implementation
+### Room (SQLite) + Retrofit (API) Implementation
 
 ---
 
@@ -7,7 +7,9 @@
 
 BorrowHub uses the **MVVM (Model-View-ViewModel)** pattern combined with a **Repository pattern**.
 
-For this project, we have opted for a **streamlined approach** where the **Entity Layer also acts as the Domain Model**. This means the classes mapped to our Room database (`data/local/entity/`) are the exact same classes passed up to the ViewModel and View. This minimizes boilerplate code (like Mappers) and speeds up development while maintaining a clean separation of concerns.
+For this project, we have opted for a **streamlined approach** where the **Entity Layer also acts as the Domain Model**. This means the classes mapped to our Room database (`data/local/entity/`) are the exact same classes passed up to the ViewModel and View.
+
+To support remote integration with the Laravel backend, we have introduced a **Remote Data Layer** using Retrofit. The Repository serves as the single source of truth, coordinating between local cache and remote API.
 
 ---
 
@@ -41,134 +43,37 @@ For this project, we have opted for a **streamlined approach** where the **Entit
 |                                                               |
 |   BorrowRepository / ItemRepository / UserRepository          |
 |   - Single source of truth                                    |
-|   - Calls DAO for database operations                         |
-|   - Returns LiveData<Entity> directly to ViewModel            |
-+----------------------------+----------------------------------+
-                             |
-                    calls queries on
-                             |
-+----------------------------v----------------------------------+
-|                       DATA LAYER                              |
-|                                                               |
-|   +----------------------+   +-----------------------------+  |
-|   |         DAO          |   |          ENTITY             |  |
-|   |                      |   |          (Also Model)       |  |
-|   |  UserDao             |   |  UserEntity                 |  |
-|   |  ItemDao             |   |  ItemEntity                 |  |
-|   |  BorrowRecordDao     |   |  BorrowRecordEntity         |  |
-|   |                      |   |                             |  |
-|   |  Interfaces with     |   |  Direct mapping to          |  |
-|   |  @Query annotations  |   |  Room database tables       |  |
-|   +----------------------+   +-----------------------------+  |
-|                                                               |
-|   AppDatabase (SQLite)                                        |
-+---------------------------------------------------------------+
+|   - Decides data source (Local cache or Remote API)           |
+|   - Orchestrates Data Sync (Remote -> Local)                  |
++--------------+-----------------------------+------------------+
+               |                             |
+      calls queries on                calls requests on
+               |                             |
++--------------v---------------+    +--------v------------------+
+|      LOCAL DATA (Room)       |    |  REMOTE DATA (Retrofit)   |
+|                              |    |                           |
+|  +--------+   +-----------+  |    |  +-----------+            |
+|  |  DAO   |   |  ENTITY   |  |    |  |ApiService |            |
+|  +--------+   +-----------+  |    |  +-----------+            |
+|                              |    |  +-----------+            |
+|  AppDatabase (SQLite)        |    |  |   DTOs    |            |
++------------------------------+    +---------------------------+
 ```
 
 ---
 
-## The Entity Layer (Database Mapping & Model)
+## The Data Layer
 
-Entities live in `data/local/entity/`. They are annotated with Room annotations and their structure matches the database table exactly. 
+BorrowHub uses a **Network-First with Local Cache** strategy:
 
-*Note: Even though fields like `password_hash` might exist in a `UserEntity`, the View should simply ignore rendering them. The ViewModel handles the logic of verifying them.*
+1.  **Remote Data (`data/remote/`)**: Fetches data from the Laravel API using Retrofit. Data is returned in **DTO (Data Transfer Object)** format.
+2.  **Local Data (`data/local/`)**: Acts as a persistent cache using Room. The Repository converts DTOs into **Entities** and saves them to the local database.
+3.  **Synchronization**: The View always observes the **Local Database**. When the Repository fetches fresh data from the API and updates the local cache, the UI automatically refreshes via `LiveData`.
 
-```
-UserEntity
-+------------------+------------------+
-| Field            | DB Column        |
-+------------------+------------------+
-| int id           | user_id (PK)     |
-| String username  | username         |
-| String password  | password (hashed)|
-| String role      | role             |
-| long createdAt   | created_at       |
-+------------------+------------------+
-
-BorrowRecordEntity
-+----------------------+----------------------+
-| Field                | DB Column            |
-+----------------------+----------------------+
-| int id               | record_id (PK)       |
-| int userId           | user_id (FK)         |
-| int itemId           | item_id (FK)         |
-| long borrowDate      | borrow_date          |
-| long expectedReturn  | expected_return_date |
-| long actualReturn    | actual_return_date   |
-| String status        | status               |
-+----------------------+----------------------+
-
-ItemEntity
-+------------------+------------------+
-| Field            | DB Column        |
-+------------------+------------------+
-| int id           | item_id (PK)     |
-| String name      | item_name        |
-| String category  | category         |
-| String condition | condition        |
-| boolean available| is_available     |
-+------------------+------------------+
-```
-
----
-
-## DAO — Database Access Object
-
-DAOs live in `data/local/dao/`. They are **interfaces** annotated with `@Dao` that define all database operations. The Repository calls these — nothing else does.
-
-```
-UserDao
-+------------------------------------------+---------------------------+
-| Method                                   | SQL Operation             |
-+------------------------------------------+---------------------------+
-| insertUser(UserEntity)                   | INSERT                    |
-| getUserById(int id) : LiveData<UserEntity>| SELECT WHERE id = ?       |
-| getUserByUsername(String) : UserEntity   | SELECT WHERE username = ? |
-| updateUser(UserEntity)                   | UPDATE                    |
-| deleteUser(UserEntity)                   | DELETE                    |
-+------------------------------------------+---------------------------+
-
-BorrowRecordDao
-+---------------------------------------------------+---------------------------+
-| Method                                            | SQL Operation             |
-+---------------------------------------------------+---------------------------+
-| insertRecord(BorrowRecordEntity)                  | INSERT                    |
-| getAllRecords() : LiveData<List<BorrowRecordEntity>>| SELECT *                 |
-| getRecordsByUser(int userId)                      | SELECT WHERE user_id = ?  |
-| getActiveRecords()                                | SELECT WHERE status = ... |
-| getOverdueRecords()                               | SELECT WHERE return < NOW |
-| updateRecord(BorrowRecordEntity)                  | UPDATE                    |
-| getRecordById(int id) : LiveData<BorrowRecordEntity>| SELECT WHERE id = ?      |
-+---------------------------------------------------+---------------------------+
-```
-
----
-
-## Repository — Single Source of Truth
-
-The Repository acts as a mediator between the DAO and the ViewModel. It ensures that the ViewModel does not directly communicate with the database.
-
-```
-Data flow for "Get Borrow Record":
-
-ViewModel calls:
-    borrowRepository.getBorrowRecord(recordId)
-         |
-         v
-Repository calls:
-    borrowRecordDao.getRecordById(recordId)
-         |
-         v
-Repository returns:
-    LiveData<BorrowRecordEntity> directly to ViewModel
-         |
-         v
-ViewModel exposes:
-    LiveData<BorrowRecordEntity> borrowRecord
-         |
-         v
-Fragment observes and renders the screen.
-```
+### Remote Layer Components
+- **`ApiService`**: Interface defining Retrofit endpoints (GET, POST, etc.).
+- **`DTO`**: Simple classes that match the JSON structure returned by the Laravel backend.
+- **`ApiClient`**: Singleton that provides the Retrofit instance.
 
 ---
 
@@ -178,39 +83,22 @@ Fragment observes and renders the screen.
 java/com/example/borrowhub/
 |
 |-- data/
-|   |-- local/
-|   |   |-- AppDatabase.java        <- RoomDatabase singleton
-|   |   |-- entity/                 <- Room Entities (Also your Models)
-|   |   |   |-- UserEntity.java
-|   |   |   |-- ItemEntity.java
-|   |   |   `-- BorrowRecordEntity.java
-|   |   `-- dao/                    <- DAOs (query interfaces)
-|   |       |-- UserDao.java
-|   |       |-- ItemDao.java
-|   |       `-- BorrowRecordDao.java
+|   |-- local/                      <- Local persistence (Room)
+|   |   |-- AppDatabase.java
+|   |   |-- entity/
+|   |   `-- dao/
+|   |
+|   `-- remote/                     <- Remote networking (Retrofit)
+|       |-- api/
+|       |   `-- ApiService.java     <- Retrofit endpoints
+|       |-- dto/                    <- API Request/Response models
+|       `-- ApiClient.java          <- Retrofit configuration
 |
-|-- repository/                     <- Repositories (data coordination)
+|-- repository/                     <- Data coordination
 |   |-- UserRepository.java
-|   |-- ItemRepository.java
+|   |-- ItemRepository.javare
 |   `-- BorrowRepository.java
-|
-|-- viewmodel/                      <- ViewModels
-|   |-- AuthViewModel.java
-|   |-- BorrowViewModel.java
-|   `-- InventoryViewModel.java
-|
-|-- view/                           <- Activities & Fragments (UI layer)
-|   |-- auth/
-|   |   `-- LoginActivity.java
-|   |-- borrow/
-|   |   |-- BorrowListFragment.java
-|   |   `-- BorrowDetailFragment.java
-|   `-- inventory/
-|       `-- InventoryFragment.java
-|
-|-- adapter/                        <- RecyclerView Adapters
-`-- utils/
-    |-- DateUtils.java
+...
 ```
 
 ---
@@ -219,17 +107,18 @@ java/com/example/borrowhub/
 
 | Class Type | Location | Used By | Contains |
 |---|---|---|---|
-| `*Entity` | `data/local/entity/` | DAO, Repository, ViewModel, View | Room annotations, DB column fields |
+| `*Entity` | `data/local/entity/` | DAO, Repository, VM, View | Room annotations, DB column fields |
+| `*DTO` | `data/remote/dto/` | ApiService, Repository | JSON mapping (GSON/Moshi) |
 | `*Dao` | `data/local/dao/` | Repository only | @Query, @Insert, @Update, @Delete |
-| `*Repository` | `repository/` | ViewModel only | Calls DAO |
+| `ApiService` | `data/remote/api/` | Repository only | Retrofit @GET, @POST annotations |
+| `*Repository`| `repository/` | ViewModel only | Orchestrates Local & Remote data |
 | `*ViewModel` | `viewmodel/` | View (Activity/Fragment) | LiveData, calls Repository |
 
 ---
 
 ## Key Rules
 
-1. The **View never touches a DAO directly** — it goes through the ViewModel -> Repository.
-2. The **ViewModel never touches a DAO directly** — always goes through the Repository.
-3. The **DAO returns Entities**.
-4. The **Entities** are passed all the way up to the View for rendering.
-5. Use `LiveData` from Room DAOs so that the UI automatically updates when the database changes.
+1.  The **View and ViewModel never touch the API directly** — always go through the Repository.
+2.  The **Repository is the only layer** allowed to communicate with both the `AppDatabase` and `ApiService`.
+3.  Always **save remote data to the local cache** before showing it in the UI (except for sensitive actions like Login).
+4.  The UI should **observe LiveData from the local database** to ensure it works offline.
