@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
@@ -109,11 +109,22 @@ const logsData: LogEntry[] = [
 
 export function TransactionLogsScreen() {
   const navigate = useNavigate();
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [activeTab, setActiveTab] = useState("transaction");
   const [searchQuery, setSearchQuery] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
 
-  const filteredData = logsData.filter((log) => {
+  useEffect(() => {
+    const logsStr = localStorage.getItem("borrowHubLogs");
+    if (logsStr) {
+      setLogs(JSON.parse(logsStr));
+    } else {
+      setLogs(logsData);
+      localStorage.setItem("borrowHubLogs", JSON.stringify(logsData));
+    }
+  }, []);
+
+  const filteredData = logs.filter((log) => {
     // Filter by Tab
     if (activeTab === "transaction" && log.type !== "Transaction") return false;
     if (activeTab === "activity" && log.type !== "Activity") return false;

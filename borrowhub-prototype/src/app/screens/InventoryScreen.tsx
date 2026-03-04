@@ -108,9 +108,11 @@ const inventoryData: InventoryItem[] = [
 
 export function InventoryScreen() {
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<string | null>(null);
   const [newItem, setNewItem] = useState({
     name: "",
     type: "",
@@ -123,11 +125,19 @@ export function InventoryScreen() {
     if (userStr) {
       setCurrentUser(JSON.parse(userStr));
     }
+    
+    const inventoryStr = localStorage.getItem("borrowHubInventory");
+    if (inventoryStr) {
+      setInventory(JSON.parse(inventoryStr));
+    } else {
+      setInventory(inventoryData);
+      localStorage.setItem("borrowHubInventory", JSON.stringify(inventoryData));
+    }
   }, []);
 
   const isAdmin = currentUser?.role?.toLowerCase().includes("admin");
 
-  const filteredData = inventoryData.filter((item) => {
+  const filteredData = inventory.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = typeFilter === "all" || item.type === typeFilter;
     return matchesSearch && matchesType;
@@ -146,16 +156,71 @@ export function InventoryScreen() {
     }
   };
 
-  const handleAddItem = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("Item Added Successfully", {
-      description: `${newItem.name} has been added to inventory.`,
+  const handleEditClick = (item: InventoryItem) => {
+    setEditingItem(item.id);
+    setNewItem({
+      name: item.name,
+      type: item.type,
+      quantity: item.quantity.toString(),
+      available: item.available.toString(),
     });
+    setIsDialogOpen(true);
+  };
+
+  const handleSaveItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    let updatedInventory;
+    
+    if (editingItem) {
+      updatedInventory = inventory.map((item) => 
+        item.id === editingItem 
+          ? {
+              ...item,
+              name: newItem.name,
+              type: newItem.type,
+              quantity: parseInt(newItem.quantity) || 0,
+              available: parseInt(newItem.available) || 0,
+            }
+          : item
+      );
+      toast.success("Item Updated", {
+        description: `${newItem.name} has been updated.`,
+      });
+    } else {
+      const item: InventoryItem = {
+        id: Date.now().toString(),
+        name: newItem.name,
+        type: newItem.type,
+        status: "Available",
+        quantity: parseInt(newItem.quantity) || 0,
+        available: parseInt(newItem.available) || 0,
+      };
+      updatedInventory = [...inventory, item];
+      toast.success("Item Added Successfully", {
+        description: `${newItem.name} has been added to inventory.`,
+      });
+    }
+    
+    setInventory(updatedInventory);
+    localStorage.setItem("borrowHubInventory", JSON.stringify(updatedInventory));
+    
     setIsDialogOpen(false);
+    setEditingItem(null);
     setNewItem({ name: "", type: "", quantity: "", available: "" });
   };
 
+  const handleOpenAddDialog = () => {
+    setEditingItem(null);
+    setNewItem({ name: "", type: "", quantity: "", available: "" });
+    setIsDialogOpen(true);
+  };
+
   const handleDelete = (name: string) => {
+    const updatedInventory = inventory.filter(item => item.name !== name);
+    setInventory(updatedInventory);
+    localStorage.setItem("borrowHubInventory", JSON.stringify(updatedInventory));
+    
     toast.success("Item Deleted", {
       description: `${name} has been removed from inventory.`,
     });
@@ -172,7 +237,7 @@ export function InventoryScreen() {
         {isAdmin && (
           <Button 
             className="bg-gradient-to-br from-black to-gray-800 hover:from-gray-800 hover:to-gray-900 sm:w-auto rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-300 h-11 px-5 font-medium" 
-            onClick={() => setIsDialogOpen(true)}
+            onClick={handleOpenAddDialog}
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Item
@@ -239,7 +304,7 @@ export function InventoryScreen() {
                   {isAdmin && (
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                        <Button variant="ghost" size="sm" onClick={() => handleEditClick(item)} className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleDelete(item.name)} className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50">
@@ -281,7 +346,7 @@ export function InventoryScreen() {
                 </div>
                 {isAdmin && (
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-600">
+                    <Button variant="ghost" size="sm" onClick={() => handleEditClick(item)} className="h-8 w-8 p-0 text-blue-600">
                       <Edit className="w-4 h-4" />
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDelete(item.name)} className="h-8 w-8 p-0 text-red-600">
@@ -306,19 +371,23 @@ export function InventoryScreen() {
 
       {/* Results Count */}
       <div className="flex items-center justify-between text-sm text-gray-500 px-1">
-        <span className="font-medium">Showing {filteredData.length} of {inventoryData.length} items</span>
+        <span className="font-medium">Showing {filteredData.length} of {inventory.length} items</span>
       </div>
 
-      {/* Add Item Dialog - Premium Styling */}
+      {/* Add/Edit Item Dialog - Premium Styling */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[480px] rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Add New Item</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">
+              {editingItem ? "Edit Item" : "Add New Item"}
+            </DialogTitle>
             <DialogDescription className="text-gray-500">
-              Enter the details of the new item to add it to the inventory.
+              {editingItem 
+                ? "Update the details of the selected item."
+                : "Enter the details of the new item to add it to the inventory."}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleAddItem} className="space-y-5 mt-6">
+          <form onSubmit={handleSaveItem} className="space-y-5 mt-6">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-gray-700 font-medium">Item Name</Label>
               <Input
@@ -372,7 +441,7 @@ export function InventoryScreen() {
               type="submit" 
               className="w-full h-11 bg-gradient-to-br from-[#DC143C] to-[#B91130] hover:from-[#B91130] hover:to-[#9A0E28] rounded-xl shadow-lg shadow-[#DC143C]/25 hover:shadow-xl hover:shadow-[#DC143C]/30 transition-all duration-300 font-medium"
             >
-              Add Item
+              {editingItem ? "Save Changes" : "Add Item"}
             </Button>
           </form>
         </DialogContent>

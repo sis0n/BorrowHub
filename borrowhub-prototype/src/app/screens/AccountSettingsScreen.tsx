@@ -9,6 +9,7 @@ import { User, Lock, Shield } from "lucide-react";
 export function AccountSettingsScreen() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -19,6 +20,7 @@ export function AccountSettingsScreen() {
       const user = JSON.parse(userStr);
       setCurrentUser(user);
       setName(user.name || "");
+      setUsername(user.username || "");
     }
   }, []);
 
@@ -26,20 +28,32 @@ export function AccountSettingsScreen() {
     e.preventDefault();
     if (!currentUser) return;
 
-    const updatedUser = { ...currentUser, name };
-    setCurrentUser(updatedUser);
-    localStorage.setItem("borrowHubCurrentUser", JSON.stringify(updatedUser));
-
-    // Also update in the user list
+    let users: any[] = [];
     const usersStr = localStorage.getItem("borrowHubUsers");
     if (usersStr) {
-      const users = JSON.parse(usersStr);
+      users = JSON.parse(usersStr);
+      if (username !== currentUser.username) {
+        const usernameExists = users.some((u: any) => u.username === username);
+        if (usernameExists) {
+          toast.error("Error", { description: "Username already exists." });
+          return;
+        }
+      }
+    }
+
+    const updatedUser = { ...currentUser, name, username };
+
+    if (usersStr) {
       const userIndex = users.findIndex((u: any) => u.username === currentUser.username);
       if (userIndex !== -1) {
         users[userIndex].name = name;
+        users[userIndex].username = username;
         localStorage.setItem("borrowHubUsers", JSON.stringify(users));
       }
     }
+
+    setCurrentUser(updatedUser);
+    localStorage.setItem("borrowHubCurrentUser", JSON.stringify(updatedUser));
 
     toast.success("Profile Updated", {
       description: "Your profile information has been saved.",
@@ -118,12 +132,13 @@ export function AccountSettingsScreen() {
             </h3>
             <form onSubmit={handleUpdateProfile} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-gray-700">Username (Uneditable)</Label>
+                <Label htmlFor="username" className="text-gray-700">Username</Label>
                 <Input
                   id="username"
-                  value={currentUser.username}
-                  disabled
-                  className="bg-gray-100/50 text-gray-500 h-11 rounded-xl"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="h-11 rounded-xl focus:border-[#DC143C] focus:ring-[#DC143C]/20"
+                  required
                 />
               </div>
               <div className="space-y-2">
