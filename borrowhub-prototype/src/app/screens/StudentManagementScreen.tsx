@@ -6,6 +6,13 @@ import { Label } from "../components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../components/ui/dialog";
 import { Plus, Edit, Trash2, Upload, GraduationCap, Search } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 
 interface Course {
   id: string;
@@ -364,14 +371,22 @@ export function StudentManagementScreen() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="course">Course</Label>
-              <Input
-                id="course"
-                placeholder="e.g. BS Computer Science"
-                value={formData.course_name}
-                onChange={(e) => setFormData({ ...formData, course_name: e.target.value })}
-                className="h-11 rounded-xl"
+              <Select 
+                value={formData.course_name} 
+                onValueChange={(val) => setFormData({ ...formData, course_name: val })}
                 required
-              />
+              >
+                <SelectTrigger className="h-11 rounded-xl bg-white">
+                  <SelectValue placeholder="Select a course" />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses.map((course) => (
+                    <SelectItem key={course.id} value={course.name}>
+                      {course.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="pt-2 flex gap-3">
               <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)} className="flex-1 rounded-xl">

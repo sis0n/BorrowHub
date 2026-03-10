@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Card } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -32,7 +32,16 @@ export function BorrowItemScreen() {
     item: "",
     otherItem: "",
   });
+  const [isAutoFilled, setIsAutoFilled] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [coursesList, setCoursesList] = useState<{id: string; name: string}[]>([]);
+
+  useEffect(() => {
+    const coursesStr = localStorage.getItem("borrowHubCourses");
+    if (coursesStr) {
+      setCoursesList(JSON.parse(coursesStr));
+    }
+  }, []);
 
   // Auto-generated fields
   const currentDateTime = new Date().toLocaleString("en-US", {
@@ -44,6 +53,50 @@ export function BorrowItemScreen() {
     hour12: true,
   });
   const staffName = "Maria Garcia"; // Would come from logged-in user
+
+  // Handle auto-fill declaratively
+  useEffect(() => {
+    if (!formData.studentNumber) {
+      if (isAutoFilled) {
+        setIsAutoFilled(false);
+        setFormData(prev => ({ ...prev, studentName: "", course: "" }));
+      }
+      return;
+    }
+
+    try {
+      const studentsStr = localStorage.getItem("borrowHubStudents");
+      const coursesStr = localStorage.getItem("borrowHubCourses");
+      
+      if (studentsStr && coursesStr) {
+        const students = JSON.parse(studentsStr);
+        const courses = JSON.parse(coursesStr);
+        
+        const foundStudent = students.find((s: any) => s.student_id === formData.studentNumber.trim());
+        
+        if (foundStudent) {
+          let courseName = "";
+          const foundCourse = courses.find((c: any) => c.id === foundStudent.course_id);
+          if (foundCourse) {
+            courseName = foundCourse.name;
+          }
+          
+          setIsAutoFilled(true);
+          setFormData(prev => ({
+            ...prev,
+            studentName: foundStudent.name,
+            course: courseName
+          }));
+        } else if (isAutoFilled) {
+          // It was auto-filled, but the number changed to something invalid
+          setIsAutoFilled(false);
+          setFormData(prev => ({ ...prev, studentName: "", course: "" }));
+        }
+      }
+    } catch (e) {
+      console.error("Error parsing student data", e);
+    }
+  }, [formData.studentNumber]); // Re-run whenever studentNumber changes
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,27 +110,6 @@ export function BorrowItemScreen() {
     setFormData((prev) => {
       const newData = { ...prev, [field]: value };
       
-      if (field === "studentNumber") {
-        try {
-          const studentsStr = localStorage.getItem("borrowHubStudents");
-          const coursesStr = localStorage.getItem("borrowHubCourses");
-          if (studentsStr && coursesStr) {
-            const students = JSON.parse(studentsStr);
-            const courses = JSON.parse(coursesStr);
-            const foundStudent = students.find((s: any) => s.student_id === value.trim());
-            if (foundStudent) {
-              newData.studentName = foundStudent.name;
-              const foundCourse = courses.find((c: any) => c.id === foundStudent.course_id);
-              if (foundCourse) {
-                newData.course = foundCourse.name;
-              }
-            }
-          }
-        } catch (e) {
-          console.error("Error parsing student data", e);
-        }
-      }
-
       // Reset item selection when type changes
       if (field === "itemType") {
         newData.item = "";
@@ -175,7 +207,8 @@ export function BorrowItemScreen() {
                 placeholder="e.g., Juan Dela Cruz"
                 value={formData.studentName}
                 onChange={(e) => handleChange("studentName", e.target.value)}
-                className="h-11 border-slate-300"
+                className={`h-11 border-slate-300 ${isAutoFilled ? "bg-slate-50 text-slate-500" : ""}`}
+                readOnly={isAutoFilled}
                 required
               />
             </div>
@@ -185,14 +218,23 @@ export function BorrowItemScreen() {
               <Label htmlFor="course" className="text-slate-700">
                 Course <span className="text-red-500">*</span>
               </Label>
-              <Input
-                id="course"
-                placeholder="e.g., BS Computer Science"
+              <Select
                 value={formData.course}
-                onChange={(e) => handleChange("course", e.target.value)}
-                className="h-11 border-slate-300"
+                onValueChange={(val) => handleChange("course", val)}
+                disabled={isAutoFilled}
                 required
-              />
+              >
+                <SelectTrigger className={`h-11 border-slate-300 ${isAutoFilled ? "bg-slate-50 text-slate-500" : ""}`}>
+                  <SelectValue placeholder="Select a course" />
+                </SelectTrigger>
+                <SelectContent>
+                  {coursesList.map((course) => (
+                    <SelectItem key={course.id} value={course.name}>
+                      {course.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
