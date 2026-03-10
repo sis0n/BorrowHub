@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('borrow_record_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('borrow_record_id')->constrained('borrow_records')->cascadeOnDelete();
-            $table->foreignId('item_id')->constrained('items')->cascadeOnDelete();
+            $table->foreignId('item_id')->constrained('items')->restrictOnDelete();
             $table->unsignedInteger('quantity')->default(1);
             
             $table->unique(['borrow_record_id', 'item_id']);

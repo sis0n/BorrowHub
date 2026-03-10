@@ -104,6 +104,6 @@ Unified audit trail for both system activities and transaction history.
 | `action` | string | No | | e.g., "Borrowed", "Returned", "Added", "Updated", "Deleted", "Created User", "Modified User" |
 | `details` | text | No | | Detailed description (e.g., "Laptop - Dell XPS 15", "Status change: Portable Speaker -> Maintenance") |
 | `type` | enum | No | | `transaction`, `activity` (used for tab filtering in the UI) |
-| `created_at` | timestamp | Yes | | Timestamp of the event |
+| `created_at` | timestamp | No | CURRENT_TIMESTAMP | Timestamp of the event |
 
 
