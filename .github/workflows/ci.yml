@@ -105,12 +105,23 @@ jobs:
           
           echo "Checking PR #$PR_NUMBER for unresolved review conversations..."
           
-          # Fetch all review threads and count unresolved ones
-          UNRESOLVED_COUNT=$(gh pr view "$PR_NUMBER" --json reviewThreads --jq '.reviewThreads[] | select(.isResolved == false) | .id' | wc -l)
+          # Use GraphQL to find unresolved threads (more reliable for all review types)
+          UNRESOLVED_COUNT=$(gh api graphql -F owner="${{ github.repository_owner }}" -F repo="${{ github.event.repository.name }}" -F pr="$PR_NUMBER" -f query='
+            query($owner:String!, $repo:String!, $pr:Int!) {
+              repository(owner:$owner, name:$repo) {
+                pullRequest(number:$pr) {
+                  reviewThreads(first: 100) {
+                    nodes {
+                      isResolved
+                    }
+                  }
+                }
+              }
+            }' --jq '.data.repository.pullRequest.reviewThreads.nodes | map(select(.isResolved == false)) | length')
           
           if [ "$UNRESOLVED_COUNT" -gt 0 ]; then
             echo "Error: There are $UNRESOLVED_COUNT unresolved review threads."
-            echo "All conversations (including those from gemini-code-assist) must be resolved by Codeowners or the PR author before merging."
+            echo "All conversations (including those from gemini-code-assist) must be resolved before merging."
             exit 1
           fi
           echo "All review conversations are resolved."
