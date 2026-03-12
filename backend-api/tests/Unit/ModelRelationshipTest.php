@@ -9,6 +9,7 @@ use App\Models\Student;
 use App\Models\Category;
 use App\Models\Item;
 use App\Models\BorrowRecord;
+use App\Models\ActivityLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 // use PHPUnit\Framework\TestCase;
 
@@ -51,5 +52,44 @@ class ModelRelationshipTest extends TestCase
 
         $this->assertCount(2, $borrowRecord->items);
         $this->assertEquals(1, $borrowRecord->items()->first()->pivot->quantity);
+    }
+
+    public function test_user_has_many_borrow_records_and_activity_logs()
+    {
+        $user = User::factory()
+            ->has(BorrowRecord::factory()->count(2), 'borrowRecords')
+            ->has(ActivityLog::factory()->count(2), 'activityLogs')
+            ->create();
+        
+        $this->assertCount(2, $user->borrowRecords);
+        $this->assertCount(2, $user->activityLogs);
+    }
+
+    public function test_activity_log_belongs_to_actor()
+    {
+        $log = ActivityLog::factory()->create();
+        $this->assertInstanceOf(User::class, $log->actor);
+    }
+
+    public function test_item_belongs_to_category()
+    {
+        $item = Item::factory()->create();
+        $this->assertInstanceOf(Category::class, $item->category);
+    }
+
+    public function test_student_has_many_borrow_records()
+    {
+        $student = Student::factory()->has(BorrowRecord::factory()->count(2))->create();
+        $this->assertCount(2, $student->borrowRecords);
+    }
+
+    public function test_item_has_many_borrow_records()
+    {
+        $item = Item::factory()->create();
+        $record = BorrowRecord::factory()->create();
+        $item->borrowRecords()->attach($record, ['quantity' => 1]);
+
+        $this->assertCount(1, $item->borrowRecords);
+        $this->assertInstanceOf(BorrowRecord::class, $item->borrowRecords->first());
     }
 }

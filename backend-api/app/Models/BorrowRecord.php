@@ -15,14 +15,14 @@ class BorrowRecord extends Model
         'collateral',
         'borrowed_at',
         'due_at',
-        'return_date',
+        'returned_at',
         'status',
     ];
 
     protected $casts = [
         'borrowed_at' => 'datetime',
         'due_at' => 'datetime',
-        'return_date' => 'datetime',
+        'returned_at' => 'datetime',
     ];
 
     public function student()
