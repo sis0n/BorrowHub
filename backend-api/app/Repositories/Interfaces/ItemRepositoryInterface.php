@@ -2,6 +2,8 @@
 
 namespace App\Repositories\Interfaces;
 
+use App\Models\Item;
+
 interface ItemRepositoryInterface
 {
     public function getAll(array $filters = []);
@@ -9,6 +11,6 @@ interface ItemRepositoryInterface
     public function create(array $data);
     public function update($id, array $data);
     public function delete($id);
-    public function decrementAvailableQuantity(int $id, int $quantity);
-    public function incrementAvailableQuantity(int $id, int $quantity);
+    public function decrementAvailableQuantity(Item $item, int $quantity);
+    public function incrementAvailableQuantity(Item $item, int $quantity);
 }

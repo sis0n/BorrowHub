@@ -11,6 +11,8 @@ use App\Repositories\Interfaces\StudentRepositoryInterface;
 use App\Repositories\Eloquent\EloquentStudentRepository;
 use App\Repositories\Interfaces\ItemRepositoryInterface;
 use App\Repositories\Eloquent\ItemRepository;
+use App\Repositories\Interfaces\BorrowRecordRepositoryInterface;
+use App\Repositories\Eloquent\EloquentBorrowRecordRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,6 +34,12 @@ class AppServiceProvider extends ServiceProvider
             CategoryRepository::class
         );
         $this->app->bind(ItemRepositoryInterface::class, ItemRepository::class);
+
+        // Transaction Bindings
+        $this->app->bind(
+            BorrowRecordRepositoryInterface::class,
+            EloquentBorrowRecordRepository::class
+        );
     }
 
     /**

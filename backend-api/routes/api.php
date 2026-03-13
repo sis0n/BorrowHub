@@ -22,6 +22,10 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('items', ItemController::class);
 
         Route::get('/students/{student_number}', [StudentController::class, 'show']);
+        
+        // Transaction Routes
+        Route::get('/transactions/active', [TransactionController::class, 'index']);
         Route::post('/transactions/borrow', [TransactionController::class, 'borrow']);
+        Route::post('/transactions/{id}/return', [TransactionController::class, 'returnItem']);
     });
 });
