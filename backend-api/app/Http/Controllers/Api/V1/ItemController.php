@@ -34,7 +34,7 @@ class ItemController extends Controller
         $item = $this->itemService->createItem($request->validated());
 
         return $this->successResponse(
-            new ItemResource($item->load('category')),
+            new ItemResource($item),
             'Item created successfully',
             201
         );
@@ -55,7 +55,7 @@ class ItemController extends Controller
         $item = $this->itemService->updateItem($id, $request->validated());
 
         return $this->successResponse(
-            new ItemResource($item->load('category')),
+            new ItemResource($item),
             'Item updated successfully'
         );
     }

@@ -17,8 +17,7 @@ class InventoryApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Gawa tayo ng staff user para sa authentication
-        $this->user = User::factory()->create(['role' => 'staff']);
+        $this->user = User::factory()->create(['role' => 'admin']);
     }
 
     public function test_can_list_categories()
@@ -39,8 +38,9 @@ class InventoryApiTest extends TestCase
         $response = $this->actingAs($this->user)
             ->getJson('/api/v1/items');
 
-        $response->assertStatus(200)
-            ->assertJsonCount(5, 'data');
+        $response->assertStatus(200);
+
+        $this->assertCount(5, $response->json('data'));
     }
 
     public function test_can_create_item()

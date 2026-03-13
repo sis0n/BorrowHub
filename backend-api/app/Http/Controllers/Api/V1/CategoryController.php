@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CategoryResources;
+use App\Http\Resources\CategoryResource;
 use App\Services\CategoryService;
 use Illuminate\Http\JsonResponse;
 
@@ -21,7 +21,7 @@ class CategoryController extends Controller
         $categories = $this->categoryService->getAllCategories();
 
         return $this->successResponse(
-            CategoryResources::collection($categories),
+            CategoryResource::collection($categories),
             'Categories retrieved successfully'
         );
     }

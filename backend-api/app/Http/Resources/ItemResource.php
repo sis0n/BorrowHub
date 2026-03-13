@@ -12,7 +12,7 @@ class ItemResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'category' => new CategoryResources($this->whenLoaded('category')),
+            'category' => new CategoryResource($this->whenLoaded('category')),
             'total_quantity' => $this->total_quantity,
             'available_quantity' => $this->available_quantity,
             'status' => $this->status,

@@ -23,7 +23,7 @@ class ItemRepository implements ItemRepositoryInterface
             $query->where('status', $filters['status']);
         }
 
-        return $query->get();
+        return $query->paginate(15);
     }
 
     public function findById($id)
@@ -33,7 +33,8 @@ class ItemRepository implements ItemRepositoryInterface
 
     public function create(array $data)
     {
-        return Item::create($data);
+        $item = Item::create($data);
+        return $item->load('category');
     }
 
     public function update($id, array $data)
