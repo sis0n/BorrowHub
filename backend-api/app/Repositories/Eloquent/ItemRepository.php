@@ -56,18 +56,15 @@ class ItemRepository implements ItemRepositoryInterface
         return $item->delete();
     }
 
-    public function decrementAvailableQuantity(int $id, int $quantity)
+    public function decrementAvailableQuantity(\App\Models\Item $item, int $quantity)
     {
-        $item = Item::findOrFail($id);
         $item->decrement('available_quantity', $quantity);
         return $item;
     }
 
-    public function incrementAvailableQuantity(int $id, int $quantity)
+    public function incrementAvailableQuantity(\App\Models\Item $item, int $quantity)
     {
-        $item = Item::findOrFail($id);
         $item->increment('available_quantity', $quantity);
         return $item;
     }
-
 }

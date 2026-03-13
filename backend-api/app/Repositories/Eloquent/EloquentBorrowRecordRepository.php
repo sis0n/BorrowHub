@@ -12,14 +12,12 @@ class EloquentBorrowRecordRepository implements BorrowRecordRepositoryInterface
         $query = BorrowRecord::with(['student', 'items', 'staff'])
             ->where('status', 'borrowed');
 
-        // Filter by Student Number
         if (isset($filters['student_number'])) {
             $query->whereHas('student', function ($q) use ($filters) {
                 $q->where('student_number', 'like', '%' . $filters['student_number'] . '%');
             });
         }
 
-        // Filter by Item Name
         if (isset($filters['item_name'])) {
             $query->whereHas('items', function ($q) use ($filters) {
                 $q->where('name', 'like', '%' . $filters['item_name'] . '%');
@@ -34,9 +32,8 @@ class EloquentBorrowRecordRepository implements BorrowRecordRepositoryInterface
         return BorrowRecord::with(['items'])->findOrFail($id);
     }
 
-    public function updateStatus(int $id, string $status, $returnedAt = null)
+    public function updateStatus(\App\Models\BorrowRecord $record, string $status, $returnedAt = null)
     {
-        $record = $this->findById($id);
         $record->update([
             'status' => $status,
             'returned_at' => $returnedAt

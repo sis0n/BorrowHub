@@ -64,7 +64,7 @@ class TransactionService
                     'quantity' => $itemData['quantity']
                 ]);
 
-                $this->itemRepository->decrementAvailableQuantity($item->id, $itemData['quantity']);
+                $this->itemRepository->decrementAvailableQuantity($item, $itemData['quantity']);
             }
 
             return $borrowRecord->load(['student', 'items', 'staff']);
@@ -82,10 +82,10 @@ class TransactionService
                 ]);
             }
 
-            $this->borrowRecordRepository->updateStatus($record->id, 'returned', Carbon::now());
+            $this->borrowRecordRepository->updateStatus($record, 'returned', Carbon::now());
 
             foreach ($record->items as $item) {
-                $this->itemRepository->incrementAvailableQuantity($item->id, $item->pivot->quantity);
+                $this->itemRepository->incrementAvailableQuantity($item, $item->pivot->quantity);
             }
 
             $record->refresh();
