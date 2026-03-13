@@ -53,17 +53,23 @@ class StudentService
     public function importStudents(UploadedFile $file)
     {
         $handle = fopen($file->getRealPath(), 'r');
-        $header = fgetcsv($handle);
-        
+        fgetcsv($handle); // Skip header row
+
         $results = [
             'success' => 0,
             'failed' => 0,
             'errors' => []
         ];
 
+        // 1. Fetch all existing student numbers into an array to avoid N+1 queries
+        $existingStudents = \App\Models\Student::pluck('student_number')->toArray();
+        $existingStudentsMap = array_flip($existingStudents);
+
         DB::beginTransaction();
         try {
+            $rowNumber = 1; // Counter starts with header
             while (($row = fgetcsv($handle)) !== false) {
+                $rowNumber++;
                 if (count($row) < 3) continue;
 
                 $data = [
@@ -73,20 +79,30 @@ class StudentService
                 ];
 
                 try {
-                    if (empty($data['student_number']) || empty($data['name']) || empty($data['course_id'])) {
-                        throw new \Exception("Missing required fields.");
+                    // 2. Use Laravel Validator for idiomatic row validation
+                    $validator = \Illuminate\Support\Facades\Validator::make($data, [
+                        'student_number' => 'required|string',
+                        'name' => 'required|string|max:255',
+                        'course_id' => 'required|integer|exists:courses,id',
+                    ]);
+
+                    if ($validator->fails()) {
+                        throw new \Exception(implode(' ', $validator->errors()->all()));
                     }
 
-                    if ($this->studentRepository->findByStudentNumber($data['student_number'])) {
+                    // 3. Check for duplicates against in-memory map
+                    if (isset($existingStudentsMap[$data['student_number']])) {
                         throw new \Exception("Student number {$data['student_number']} already exists.");
                     }
 
                     $this->studentRepository->create($data);
+
+                    // Add to map to prevent duplicates within the same CSV
+                    $existingStudentsMap[$data['student_number']] = true;
                     $results['success']++;
                 } catch (\Exception $e) {
                     $results['failed']++;
-                    $total = $results['success'] + $results['failed'];
-                    $results['errors'][] = "Row {$total}: {$e->getMessage()}";
+                    $results['errors'][] = "Row {$rowNumber}: {$e->getMessage()}";
                 }
             }
             DB::commit();

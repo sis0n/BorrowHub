@@ -12,11 +12,11 @@ class EloquentStudentRepository implements StudentRepositoryInterface
         $query = Student::with('course');
 
         if (isset($filters['student_number'])) {
-            $query->where('student_number', 'like', '%' . $filters['student_number'] . '%');
+            $query->where('student_number', 'like', $filters['student_number'] . '%');
         }
 
         if (isset($filters['name'])) {
-            $query->where('name', 'like', '%' . $filters['name'] . '%');
+            $query->where('name', 'like', $filters['name'] . '%');
         }
 
         if (isset($filters['course_id'])) {

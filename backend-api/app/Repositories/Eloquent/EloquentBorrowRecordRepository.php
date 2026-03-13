@@ -11,18 +11,19 @@ class EloquentBorrowRecordRepository implements BorrowRecordRepositoryInterface
     {
         $query = BorrowRecord::with(['student', 'items', 'staff'])
             ->where('status', 'borrowed');
+// Filter by Student Number
+if (isset($filters['student_number'])) {
+    $query->whereHas('student', function ($q) use ($filters) {
+        $q->where('student_number', 'like', $filters['student_number'] . '%');
+    });
+}
 
-        if (isset($filters['student_number'])) {
-            $query->whereHas('student', function ($q) use ($filters) {
-                $q->where('student_number', 'like', '%' . $filters['student_number'] . '%');
-            });
-        }
-
-        if (isset($filters['item_name'])) {
-            $query->whereHas('items', function ($q) use ($filters) {
-                $q->where('name', 'like', '%' . $filters['item_name'] . '%');
-            });
-        }
+// Filter by Item Name
+if (isset($filters['item_name'])) {
+    $query->whereHas('items', function ($q) use ($filters) {
+        $q->where('name', 'like', $filters['item_name'] . '%');
+    });
+}
 
         return $query->latest()->paginate(config('borrow.pagination_size', 15));
     }
