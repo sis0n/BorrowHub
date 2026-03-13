@@ -33,7 +33,7 @@ class TransactionService
                 'Student not found.']);
             }
 
-            $dueAt = Carbon::now()->setTime(20, 0, 0);
+            $dueAt = Carbon::now()->setTime(config('borrow.due_hour', 20), 0, 0);
 
             $borrowRecord = BorrowRecord::create([
                 'student_id' => $student->id,
@@ -45,7 +45,7 @@ class TransactionService
             ]);
 
             foreach ($data['items'] as $itemData) {
-                $item = $this->itemRepository->findById($itemData['id']);
+                $item = $this->itemRepository->findById($itemData['id'], true);
 
                 if ($item->available_quantity < $itemData['quantity']) {
                     throw ValidationException::withMessages([

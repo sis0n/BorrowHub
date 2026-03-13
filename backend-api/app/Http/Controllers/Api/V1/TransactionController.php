@@ -25,7 +25,7 @@ class TransactionController extends Controller
                 $this->transactionService->processBorrow($request->validated());
 
             return $this->successResponse(
-                $record,
+                new BorrowRecordResource($record),
                 'Borrow transaction processed successfully.',
                 201
             );

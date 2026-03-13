@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Inventory;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\ValidAvailableQuantity;
 
 class UpdateItemRequest extends FormRequest
 {
@@ -21,16 +22,7 @@ class UpdateItemRequest extends FormRequest
                 'sometimes',
                 'integer',
                 'min:0',
-                function ($attribute, $value, $fail) {
-                    $item = \App\Models\Item::find($this->route('item'));
-                    if (!$item) return;
-
-                    $totalQuantity = $this->input('total_quantity', $item->total_quantity);
-
-                    if ($value > $totalQuantity) {
-                        $fail('The available quantity cannot be greater than the total quantity.');
-                    }
-                },
+                new ValidAvailableQuantity($this->route('item'), $this->input('total_quantity'))
             ],
             'status' => 'sometimes|in:active,maintenance,archived',
         ];
