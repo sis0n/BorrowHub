@@ -13,6 +13,8 @@ use App\Repositories\Interfaces\ItemRepositoryInterface;
 use App\Repositories\Eloquent\ItemRepository;
 use App\Repositories\Interfaces\BorrowRecordRepositoryInterface;
 use App\Repositories\Eloquent\EloquentBorrowRecordRepository;
+use App\Repositories\Interfaces\DashboardRepositoryInterface;
+use App\Repositories\Eloquent\DashboardRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,6 +41,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             BorrowRecordRepositoryInterface::class,
             EloquentBorrowRecordRepository::class
+        );
+
+        $this->app->bind(
+            DashboardRepositoryInterface::class,
+            DashboardRepository::class
         );
     }
 
