@@ -56,7 +56,7 @@ public class LoginActivity extends AppCompatActivity {
             viewModel.login(username, password).observe(this, isSuccess -> {
                 if (Boolean.TRUE.equals(isSuccess)) {
                     Toast.makeText(this, com.example.borrowhub.R.string.login_success, Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
                     startActivity(intent);
                     finish();
                 }

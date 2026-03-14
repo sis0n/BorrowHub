@@ -12,4 +12,17 @@
     <string name="error_empty_fields">Username and password cannot be empty</string>
     <string name="login_failed">Invalid Credentials: Username or password is incorrect.</string>
     <string name="login_success">Login Successful</string>
+
+    <string name="dashboard_title">Dashboard</string>
+    <string name="dashboard_subtitle">Overview of resource management</string>
+    <string name="dashboard_total_borrowed">Total Borrowed</string>
+    <string name="dashboard_active_requests">Active Requests</string>
+    <string name="dashboard_overdue_items">Overdue Items</string>
+    <string name="dashboard_quick_actions">Quick Actions</string>
+    <string name="dashboard_borrow_return">Borrow / Return</string>
+    <string name="dashboard_borrow_return_desc">Process transactions</string>
+    <string name="dashboard_manage_inventory">Manage Inventory</string>
+    <string name="dashboard_manage_inventory_desc">View and edit items</string>
+    <string name="dashboard_recent_transactions">Recent Transactions</string>
+    <string name="dashboard_view_all">View All →</string>
 </resources>
