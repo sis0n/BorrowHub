@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\StudentController;
 use App\Http\Controllers\Api\V1\TransactionController;
 
+use App\Http\Controllers\Api\V1\UserController;
+
 Route::prefix('v1')->group(function () {
     // Public routes
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
@@ -18,7 +20,13 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/user', [AuthController::class, 'user']);
 
-        Route::get('/dashboard', [DashboardController::class, 'index']);
+        // Admin Only Routes
+        Route::middleware('role:admin')->group(function () {
+            Route::post('/users/{id}/reset-password', [UserController::class, 'resetPassword']);
+            Route::apiResource('users', UserController::class);
+        });
+
+        Route::get('/categories', [CategoryController::class, 'index']);
 
         Route::get('/categories', [CategoryController::class, 'index']);
         
