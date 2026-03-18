@@ -2,6 +2,7 @@ package com.example.borrowhub.data.local.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 /**
@@ -23,6 +24,7 @@ public class CategoryEntity {
     public CategoryEntity() {
     }
 
+    @Ignore
     public CategoryEntity(int id, String name, String createdAt) {
         this.id = id;
         this.name = name;

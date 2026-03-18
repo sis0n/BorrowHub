@@ -1,99 +1,95 @@
 package com.example.borrowhub.data.local.entity;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
-import androidx.room.Index;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
-/**
- * Room Entity for Item local storage.
- * Represents an item in the local SQLite database.
- */
-@Entity(tableName = "items",
-        foreignKeys = @ForeignKey(
-                entity = CategoryEntity.class,
-                parentColumns = "id",
-                childColumns = "category_id",
-                onDelete = ForeignKey.CASCADE
-        ),
-        indices = {@Index("category_id")})
+@Entity(tableName = "items")
 public class ItemEntity {
-    @PrimaryKey
-    @ColumnInfo(name = "id")
-    private int id;
 
-    @ColumnInfo(name = "name")
-    private String name;
-
+    @PrimaryKey(autoGenerate = true)
+    public long id;
+    @NonNull
+    public String name;
+    @NonNull
+    public String type;
+    @NonNull
+    public String status;
+    public int totalQuantity;
+    public int availableQuantity;
     @ColumnInfo(name = "category_id")
-    private int categoryId;
-
-    @ColumnInfo(name = "category_name")
-    private String categoryName;
-
-    @ColumnInfo(name = "total_quantity")
-    private int totalQuantity;
-
-    @ColumnInfo(name = "available_quantity")
-    private int availableQuantity;
-
-    @ColumnInfo(name = "status")
-    private String status;
-
+    public int categoryId;
     @ColumnInfo(name = "created_at")
-    private String createdAt;
-
+    public String createdAt;
     @ColumnInfo(name = "updated_at")
-    private String updatedAt;
+    public String updatedAt;
 
     public ItemEntity() {
     }
 
-    public ItemEntity(int id, String name, int categoryId, String categoryName,
+    @Ignore
+    public ItemEntity(long id, String name, String type, String status, int totalQuantity, int availableQuantity) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
+        this.status = status;
+        this.totalQuantity = totalQuantity;
+        this.availableQuantity = availableQuantity;
+        this.categoryId = 0;
+        this.createdAt = "";
+        this.updatedAt = "";
+    }
+
+    @Ignore
+    public ItemEntity(long id, String name, int categoryId, String categoryName,
                       int totalQuantity, int availableQuantity, String status,
                       String createdAt, String updatedAt) {
         this.id = id;
         this.name = name;
-        this.categoryId = categoryId;
-        this.categoryName = categoryName;
+        this.type = categoryName;
+        this.status = status;
         this.totalQuantity = totalQuantity;
         this.availableQuantity = availableQuantity;
-        this.status = status;
+        this.categoryId = categoryId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
+    @NonNull
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NonNull String name) {
         this.name = name;
     }
 
-    public int getCategoryId() {
-        return categoryId;
+    @NonNull
+    public String getType() {
+        return type;
     }
 
-    public void setCategoryId(int categoryId) {
-        this.categoryId = categoryId;
+    public void setType(@NonNull String type) {
+        this.type = type;
     }
 
-    public String getCategoryName() {
-        return categoryName;
+    @NonNull
+    public String getStatus() {
+        return status;
     }
 
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
+    public void setStatus(@NonNull String status) {
+        this.status = status;
     }
 
     public int getTotalQuantity() {
@@ -112,12 +108,12 @@ public class ItemEntity {
         this.availableQuantity = availableQuantity;
     }
 
-    public String getStatus() {
-        return status;
+    public int getCategoryId() {
+        return categoryId;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
     }
 
     public String getCreatedAt() {

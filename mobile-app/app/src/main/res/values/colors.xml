@@ -15,4 +15,11 @@
     <color name="gray_500">#6B7280</color>
     <color name="gray_700">#374151</color>
     <color name="gray_900">#111827</color>
+
+    <color name="inventory_status_available_text">#15803D</color>
+    <color name="inventory_status_available_bg">#DCFCE7</color>
+    <color name="inventory_status_borrowed_text">#B45309</color>
+    <color name="inventory_status_borrowed_bg">#FEF3C7</color>
+    <color name="inventory_status_maintenance_text">#B91C1C</color>
+    <color name="inventory_status_maintenance_bg">#FEE2E2</color>
 </resources>

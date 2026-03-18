@@ -25,4 +25,29 @@
     <string name="dashboard_manage_inventory_desc">View and edit items</string>
     <string name="dashboard_recent_transactions">Recent Transactions</string>
     <string name="dashboard_view_all">View All →</string>
+
+    <string name="inventory_title">Inventory Management</string>
+    <string name="inventory_subtitle">Manage and track all resources</string>
+    <string name="inventory_search_hint">Search by item name...</string>
+    <string name="inventory_empty_state">No items found matching your criteria.</string>
+    <string name="inventory_field_item_name">Item Name</string>
+    <string name="inventory_field_type">Type</string>
+    <string name="inventory_field_total_quantity">Total Quantity</string>
+    <string name="inventory_field_available_quantity">Available Quantity</string>
+    <string name="inventory_content_desc_edit_item">Edit item</string>
+    <string name="inventory_content_desc_delete_item">Delete item</string>
+    <string name="inventory_delete_title">Delete Item</string>
+    <string name="inventory_delete_message">Delete %1$s from inventory?</string>
+    <string name="inventory_action_cancel">Cancel</string>
+    <string name="inventory_action_delete">Delete</string>
+    <string name="inventory_action_add">Add Item</string>
+    <string name="inventory_action_save">Save Changes</string>
+    <string name="inventory_dialog_add_title">Add New Item</string>
+    <string name="inventory_dialog_edit_title">Edit Item</string>
+    <string name="inventory_error_complete_fields">Please complete all fields</string>
+    <string name="inventory_error_available_exceeds_total">Available quantity cannot exceed total</string>
+    <string name="inventory_item_added">Item added</string>
+    <string name="inventory_item_updated">Item updated</string>
+    <string name="inventory_item_deleted">Item deleted</string>
+    <string name="inventory_stock_format">Available %1$d / %2$d</string>
 </resources>
