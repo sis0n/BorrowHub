@@ -1,11 +1,20 @@
 package com.example.borrowhub.data.remote.dto;
 
+import com.google.gson.annotations.SerializedName;
+
 public class UserDTO {
+    @SerializedName("id")
     private int id;
+    @SerializedName("name")
     private String name;
+    @SerializedName("username")
     private String username;
-    // Assuming a role could be present. If not, it can be omitted.
+    @SerializedName("role")
     private String role;
+    @SerializedName("created_at")
+    private String createdAt;
+    @SerializedName("updated_at")
+    private String updatedAt;
 
     public int getId() {
         return id;
@@ -37,5 +46,21 @@ public class UserDTO {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
