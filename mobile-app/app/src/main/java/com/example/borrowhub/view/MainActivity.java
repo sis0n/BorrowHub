@@ -9,13 +9,17 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.borrowhub.R;
 import com.example.borrowhub.databinding.ActivityMainBinding;
 import com.example.borrowhub.viewmodel.AuthViewModel;
+
 import android.content.Intent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -45,7 +49,46 @@ public class MainActivity extends AppCompatActivity {
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         if (navHostFragment != null) {
             navController = navHostFragment.getNavController();
-            NavigationUI.setupWithNavController(binding.bottomNavigationView, navController);
+            //NavigationUI.setupWithNavController(binding.bottomNavigationView, navController);
+            binding.bottomNavigationView.setOnItemSelectedListener(item -> {
+                NavOptions.Builder builder = new NavOptions.Builder()
+                        .setLaunchSingleTop(true)
+                        .setRestoreState(true);
+
+                // Pop up to the start destination of the graph to avoid building up a large stack of destinations
+                // on the back stack as users select items
+                builder.setPopUpTo(navController.getGraph().getStartDestinationId(), false);
+
+                NavOptions options = builder.build();
+                navController.navigate(item.getItemId(), null, options);
+                return true;
+            });
+
+            // Correctly handle highlight state for non-bottom-nav destinations
+            navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+                int destId = destination.getId();
+                // Check if the destination is part of the bottom menu
+                boolean isInBottomMenu = destId == R.id.homeFragment ||
+                                         destId == R.id.inventoryFragment ||
+                                         destId == R.id.transactionFragment ||
+                                         destId == R.id.logsFragment;
+
+                if (!isInBottomMenu) {
+                    // Deselect all items if we are in a sub-view (like Student Management)
+                    // but NOT if we are in one of the main tabs.
+                    binding.bottomNavigationView.getMenu().setGroupCheckable(0, true, false);
+                    for (int i = 0; i < binding.bottomNavigationView.getMenu().size(); i++) {
+                        binding.bottomNavigationView.getMenu().getItem(i).setChecked(false);
+                    }
+                    binding.bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
+                } else {
+                    // Select the corresponding item in the bottom navigation view
+                    for (int i = 0; i < binding.bottomNavigationView.getMenu().size(); i++) {
+                        MenuItem item = binding.bottomNavigationView.getMenu().getItem(i);
+                        item.setChecked(item.getItemId() == destId);
+                    }
+                }
+            });
         }
 
         // Setup TopAppBar menu clicks
@@ -58,7 +101,10 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "User Management Clicked", Toast.LENGTH_SHORT).show();
                 return true;
             } else if (itemId == R.id.action_student_management) {
-                Toast.makeText(this, "Student Management Clicked", Toast.LENGTH_SHORT).show();
+                if (navController != null) {
+                    // Navigate to student management fragment
+                    navController.navigate(R.id.studentManagementFragment);
+                }
                 return true;
             } else if (itemId == R.id.action_logout) {
                 authViewModel.logout();
@@ -66,6 +112,11 @@ public class MainActivity extends AppCompatActivity {
             }
             return false;
         });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        return navController != null && navController.navigateUp() || super.onSupportNavigateUp();
     }
 
     private void setupObservers() {
@@ -87,3 +138,4 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 }
+

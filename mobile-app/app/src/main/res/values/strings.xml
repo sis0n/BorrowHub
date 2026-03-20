@@ -52,6 +52,43 @@
     <string name="inventory_item_deleted">Item deleted</string>
     <string name="inventory_stock_format">Available %1$d / %2$d</string>
 
+    <!-- Student Management -->
+    <string name="student_title">Student Management</string>
+    <string name="student_subtitle">Manage master list of university students</string>
+    <string name="student_search_hint">Search by student number or name…</string>
+    <string name="student_empty_state">No students found. Add students to get started.</string>
+    <string name="student_total_count">Total: %1$d</string>
+    <string name="student_field_number">Student Number</string>
+    <string name="student_field_name">Full Name</string>
+    <string name="student_field_course">Course</string>
+    <string name="student_content_desc_edit">Edit student</string>
+    <string name="student_content_desc_delete">Delete student</string>
+    <string name="student_delete_title">Delete Student</string>
+    <string name="student_delete_message">Remove %1$s from the student list?</string>
+    <string name="student_action_cancel">Cancel</string>
+    <string name="student_action_delete">Delete</string>
+    <string name="student_action_add">Add Student</string>
+    <string name="student_action_save">Save Student</string>
+    <string name="student_action_update">Save Changes</string>
+    <string name="student_action_import">Bulk Import</string>
+    <string name="student_dialog_add_title">Add New Student</string>
+    <string name="student_dialog_edit_title">Edit Student</string>
+    <string name="student_error_complete_fields">Please fill in all fields</string>
+    <string name="student_error_duplicate_number">Student Number already exists</string>
+    <string name="student_added">Student added successfully</string>
+    <string name="student_updated">Student updated successfully</string>
+    <string name="student_deleted">Student removed</string>
+    <string name="student_import_title">Bulk Import Students</string>
+    <string name="student_import_hint">Paste CSV data below. Format: Student Number, Full Name, Course Name</string>
+    <string name="student_import_csv_label">CSV Data</string>
+    <string name="student_import_empty">Please paste CSV data to import</string>
+    <string name="student_import_success">Added %1$d students. Skipped %2$d duplicates.</string>
+    <string name="student_import_no_valid">No valid new students found to import</string>
+    <string name="student_add_processing">Adding student…</string>
+    <string name="student_update_processing">Updating student…</string>
+    <string name="student_delete_processing">Deleting student…</string>
+    <string name="student_import_processing">Importing students…</string>
+
     <!-- Transaction screen -->
     <string name="transaction_title">Transactions</string>
     <string name="transaction_subtitle">Manage borrow and return workflows</string>

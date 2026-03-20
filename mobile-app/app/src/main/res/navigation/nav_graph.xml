@@ -28,4 +28,11 @@
         android:name="com.example.borrowhub.view.fragment.LogsFragment"
         android:label="Logs"
         tools:layout="@layout/fragment_logs" />
+
+    <fragment
+        android:id="@+id/studentManagementFragment"
+        android:name="com.example.borrowhub.view.fragment.StudentManagementFragment"
+        android:label="Student Management"
+        tools:layout="@layout/fragment_student_management" />
+
 </navigation>

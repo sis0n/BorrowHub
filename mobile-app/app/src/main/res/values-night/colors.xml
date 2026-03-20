@@ -26,4 +26,10 @@
     <color name="inventory_status_borrowed_bg">#312922</color>
     <color name="inventory_status_maintenance_text">#D28B8B</color>
     <color name="inventory_status_maintenance_bg">#312426</color>
+
+    <color name="student_course_badge_text">#93C5FD</color>
+    <color name="student_course_badge_bg">#1E3A5F</color>
+    <color name="student_course_badge_border">#1D4ED8</color>
+    <color name="student_avatar_bg">#2D3069</color>
+    <color name="student_avatar_text">#A5B4FC</color>
 </resources>
