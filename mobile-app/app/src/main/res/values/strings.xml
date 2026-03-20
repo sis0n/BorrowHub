@@ -154,4 +154,13 @@
     <string name="return_dialog_action_process">Process Return</string>
     <string name="return_dialog_action_cancel">Cancel</string>
     <string name="return_success_toast">Return processed successfully.</string>
+
+    <!-- Logs -->
+    <string name="logs_title">System Logs</string>
+    <string name="logs_subtitle">Review transaction and activity history</string>
+    <string name="logs_tab_transaction">Transaction Logs</string>
+    <string name="logs_tab_activity">Activity Logs</string>
+    <string name="logs_search_hint">Search by user, ID, or details…</string>
+    <string name="logs_transaction_empty_state">No transaction logs match your filters.</string>
+    <string name="logs_activity_empty_state">No activity logs match your filters.</string>
 </resources>
