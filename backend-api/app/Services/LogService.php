@@ -24,28 +24,17 @@ class LogService
 
     public function getActivityLogs(array $filters = [])
     {
-        $query = ActivityLog::where('type', 'activity')->orderBy('created_at', 'desc');
-
-        if (isset($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function($q) use ($search) {
-                $q->where('action', 'like', "%{$search}%")
-                  ->orWhere('details', 'like', "%{$search}%")
-                  ->orWhere('performed_by', 'like', "%{$search}%")
-                  ->orWhere('target_user_name', 'like', "%{$search}%");
-            });
-        }
-        
-        if (isset($filters['action'])) {
-             $query->where('action', $filters['action']);
-        }
-
-        return $query->paginate($filters['per_page'] ?? 15);
+        return $this->getLogs('activity', $filters);
     }
 
     public function getTransactionLogs(array $filters = [])
     {
-        $query = ActivityLog::where('type', 'transaction')->orderBy('created_at', 'desc');
+        return $this->getLogs('transaction', $filters);
+    }
+
+    private function getLogs(string $type, array $filters = [])
+    {
+        $query = ActivityLog::where('type', $type)->orderBy('created_at', 'desc');
 
         if (isset($filters['search'])) {
             $search = $filters['search'];
