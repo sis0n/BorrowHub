@@ -10,10 +10,12 @@ use Illuminate\Validation\ValidationException;
 class StudentService
 {
     protected $studentRepository;
+    protected $logService;
 
-    public function __construct(StudentRepositoryInterface $studentRepository)
+    public function __construct(StudentRepositoryInterface $studentRepository, LogService $logService)
     {
         $this->studentRepository = $studentRepository;
+        $this->logService = $logService;
     }
 
     public function getAllStudents(array $filters)
@@ -37,17 +39,48 @@ class StudentService
 
     public function createStudent(array $data)
     {
-        return $this->studentRepository->create($data);
+        $student = $this->studentRepository->create($data);
+
+        $this->logService->log(
+            'Student Created',
+            "Created student in course ID: {$student->course_id}",
+            (string)$student->id,
+            $student->name
+        );
+
+        return $student;
     }
 
     public function updateStudent(int $id, array $data)
     {
-        return $this->studentRepository->update($id, $data);
+        $result = $this->studentRepository->update($id, $data);
+        $student = $this->studentRepository->findById($id);
+
+        $this->logService->log(
+            'Student Updated',
+            "Updated student fields: " . implode(', ', array_keys($data)),
+            (string)$student->id,
+            $student->name
+        );
+
+        return $result;
     }
 
     public function deleteStudent(int $id)
     {
-        return $this->studentRepository->delete($id);
+        $student = $this->studentRepository->findById($id);
+        $result = $this->studentRepository->delete($id);
+
+        if ($student) {
+            $this->logService->log(
+                'Student Deleted',
+                "Deleted student",
+                (string)$student->id,
+                $student->name
+            );
+        }
+
+        return $result;
     }
 
     public function importStudents(UploadedFile $file)
@@ -102,6 +135,16 @@ class StudentService
                 }
             }
             DB::commit();
+
+            if ($results['success'] > 0) {
+                $this->logService->log(
+                    'Students Imported',
+                    "Imported {$results['success']} students. Failed: {$results['failed']}",
+                    "N/A",
+                    "Batch Import"
+                );
+            }
+
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

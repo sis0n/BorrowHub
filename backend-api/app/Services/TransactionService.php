@@ -16,15 +16,18 @@ class TransactionService
     protected $itemRepository;
     protected $studentRepository;
     protected $borrowRecordRepository;
+    protected $logService;
 
     public function __construct(
         ItemRepositoryInterface $itemRepository,
         StudentRepositoryInterface $studentRepository,
-        BorrowRecordRepositoryInterface $borrowRecordRepository
+        BorrowRecordRepositoryInterface $borrowRecordRepository,
+        LogService $logService
     ) {
         $this->itemRepository = $itemRepository;
         $this->studentRepository = $studentRepository;
         $this->borrowRecordRepository = $borrowRecordRepository;
+        $this->logService = $logService;
     }
 
     public function searchActiveTransactions(array $filters)
@@ -51,6 +54,8 @@ class TransactionService
                 'status' => 'borrowed',
             ]);
 
+            $loggedItems = [];
+
             foreach ($data['items'] as $itemData) {
                 $item = $this->itemRepository->findById($itemData['id'], true);
 
@@ -65,7 +70,16 @@ class TransactionService
                 ]);
 
                 $this->itemRepository->decrementAvailableQuantity($item, $itemData['quantity']);
+                $loggedItems[] = "{$item->name} ({$itemData['quantity']})";
             }
+
+            $this->logService->log(
+                'Items Borrowed',
+                "Borrowed items: " . implode(', ', $loggedItems),
+                (string)$student->id,
+                $student->name,
+                'transaction'
+            );
 
             return $borrowRecord->load(['student', 'items', 'staff']);
         });
@@ -84,11 +98,21 @@ class TransactionService
 
             $this->borrowRecordRepository->updateStatus($record, 'returned', Carbon::now());
 
+            $loggedItems = [];
             foreach ($record->items as $item) {
                 $this->itemRepository->incrementAvailableQuantity($item, $item->pivot->quantity);
+                $loggedItems[] = "{$item->name} ({$item->pivot->quantity})";
             }
 
             $record->refresh();
+
+            $this->logService->log(
+                'Items Returned',
+                "Returned items: " . implode(', ', $loggedItems),
+                (string)$record->student->id,
+                $record->student->name,
+                'transaction'
+            );
 
             return $record->load(['student', 'items', 'staff']);
         });

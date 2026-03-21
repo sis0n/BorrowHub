@@ -7,10 +7,12 @@ use App\Repositories\Interfaces\ItemRepositoryInterface;
 class ItemService
 {
     protected $itemRepository;
+    protected $logService;
 
-    public function __construct(ItemRepositoryInterface $itemRepository)
+    public function __construct(ItemRepositoryInterface $itemRepository, LogService $logService)
     {
         $this->itemRepository = $itemRepository;
+        $this->logService = $logService;
     }
 
     public function getAllItems(array $filters = [])
@@ -24,17 +26,48 @@ class ItemService
             $data['available_quantity'] = $data['total_quantity'];
         }
 
-        return $this->itemRepository->create($data);
+        $item = $this->itemRepository->create($data);
+
+        $this->logService->log(
+            'Item Created',
+            "Created item with quantity: {$item->total_quantity}",
+            (string)$item->id,
+            $item->name
+        );
+
+        return $item;
     }
 
     public function updateItem($id, array $data)
     {
-        return $this->itemRepository->update($id, $data);
+        $result = $this->itemRepository->update($id, $data);
+        $item = $this->itemRepository->findById($id);
+
+        $this->logService->log(
+            'Item Updated',
+            "Updated item fields: " . implode(', ', array_keys($data)),
+            (string)$item->id,
+            $item->name
+        );
+
+        return $result;
     }
 
     public function deleteItem($id)
     {
-        return $this->itemRepository->delete($id);
+        $item = $this->itemRepository->findById($id);
+        $result = $this->itemRepository->delete($id);
+
+        if ($item) {
+            $this->logService->log(
+                'Item Deleted',
+                "Deleted item",
+                (string)$item->id,
+                $item->name
+            );
+        }
+
+        return $result;
     }
 
     public function getItemById($id)
