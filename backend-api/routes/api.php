@@ -19,6 +19,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/user', [AuthController::class, 'user']);
 
         Route::get('/dashboard', [DashboardController::class, 'index']);
+        Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+        Route::get('/dashboard/recent-transactions', [DashboardController::class, 'recentTransactions']);
 
         Route::get('/categories', [CategoryController::class, 'index']);
         

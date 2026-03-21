@@ -66,10 +66,10 @@ public interface ApiService {
     Call<ApiResponseDTO<Void>> resetUserPassword(@Header("Authorization") String token, @Path("id") int userId, @Body ResetPasswordRequestDTO request);
 
     @GET("api/v1/dashboard/stats")
-    Call<DashboardStatsDTO> getDashboardStats(@Header("Authorization") String token);
+    Call<ApiResponseDTO<DashboardStatsDTO>> getDashboardStats(@Header("Authorization") String token);
 
     @GET("api/v1/dashboard/recent-transactions")
-    Call<List<RecentTransactionDTO>> getRecentTransactions(@Header("Authorization") String token);
+    Call<ApiResponseDTO<List<RecentTransactionDTO>>> getRecentTransactions(@Header("Authorization") String token);
 
     // Inventory - Categories
     @GET("api/v1/categories")

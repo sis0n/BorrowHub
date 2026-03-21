@@ -32,4 +32,40 @@ class DashboardController extends Controller
             return $this->errorResponse('An error occurred while retrieving dashboard statistics.', 500);
         }
     }
+
+    /**
+     * Get only dashboard statistics summary.
+     */
+    public function stats(): JsonResponse
+    {
+        try {
+            $stats = $this->dashboardService->getDashboardStatsSummary();
+
+            return $this->successResponse(
+                $stats,
+                'Dashboard summary retrieved successfully.'
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to retrieve dashboard summary.', ['exception' => $e]);
+            return $this->errorResponse('An error occurred while retrieving dashboard summary.', 500);
+        }
+    }
+
+    /**
+     * Get only recent transactions.
+     */
+    public function recentTransactions(): JsonResponse
+    {
+        try {
+            $transactions = $this->dashboardService->getRecentTransactions();
+
+            return $this->successResponse(
+                \App\Http\Resources\BorrowRecordResource::collection($transactions),
+                'Recent transactions retrieved successfully.'
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to retrieve recent transactions.', ['exception' => $e]);
+            return $this->errorResponse('An error occurred while retrieving recent transactions.', 500);
+        }
+    }
 }

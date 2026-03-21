@@ -1,6 +1,7 @@
 package com.example.borrowhub.data.remote.dto;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.List;
 
 public class RecentTransactionDTO {
 
@@ -13,6 +14,9 @@ public class RecentTransactionDTO {
     @SerializedName("borrowed_at")
     private String borrowedAt;
 
+    @SerializedName("items")
+    private List<ItemDTO> items;
+
     // Getters
     public int getId() {
         return id;
@@ -24,5 +28,9 @@ public class RecentTransactionDTO {
 
     public String getBorrowedAt() {
         return borrowedAt;
+    }
+
+    public List<ItemDTO> getItems() {
+        return items;
     }
 }

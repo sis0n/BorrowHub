@@ -8,7 +8,9 @@ import com.example.borrowhub.data.local.dao.RecentTransactionDao;
 import com.example.borrowhub.data.local.entity.DashboardStatsEntity;
 import com.example.borrowhub.data.local.entity.RecentTransactionEntity;
 import com.example.borrowhub.data.remote.api.ApiService;
+import com.example.borrowhub.data.remote.dto.ApiResponseDTO;
 import com.example.borrowhub.data.remote.dto.DashboardStatsDTO;
+import com.example.borrowhub.data.remote.dto.ItemDTO;
 import com.example.borrowhub.data.remote.dto.RecentTransactionDTO;
 
 import java.util.ArrayList;
@@ -35,11 +37,11 @@ public class DashboardRepository {
     }
 
     public LiveData<DashboardStatsEntity> getDashboardStats(String token) {
-        apiService.getDashboardStats(token).enqueue(new Callback<DashboardStatsDTO>() {
+        apiService.getDashboardStats(token).enqueue(new Callback<ApiResponseDTO<DashboardStatsDTO>>() {
             @Override
-            public void onResponse(Call<DashboardStatsDTO> call, Response<DashboardStatsDTO> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    DashboardStatsDTO dto = response.body();
+            public void onResponse(Call<ApiResponseDTO<DashboardStatsDTO>> call, Response<ApiResponseDTO<DashboardStatsDTO>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    DashboardStatsDTO dto = response.body().getData();
                     executorService.execute(() -> {
                         DashboardStatsEntity entity = new DashboardStatsEntity(
                             dto.getTotalItems(),
@@ -54,7 +56,7 @@ public class DashboardRepository {
             }
 
             @Override
-            public void onFailure(Call<DashboardStatsDTO> call, Throwable t) {
+            public void onFailure(Call<ApiResponseDTO<DashboardStatsDTO>> call, Throwable t) {
             }
         });
 
@@ -62,17 +64,25 @@ public class DashboardRepository {
     }
 
     public LiveData<List<RecentTransactionEntity>> getRecentTransactions(String token) {
-        apiService.getRecentTransactions(token).enqueue(new Callback<List<RecentTransactionDTO>>() {
+        apiService.getRecentTransactions(token).enqueue(new Callback<ApiResponseDTO<List<RecentTransactionDTO>>>() {
             @Override
-            public void onResponse(Call<List<RecentTransactionDTO>> call, Response<List<RecentTransactionDTO>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<RecentTransactionDTO> dtoList = response.body();
+            public void onResponse(Call<ApiResponseDTO<List<RecentTransactionDTO>>> call, Response<ApiResponseDTO<List<RecentTransactionDTO>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    List<RecentTransactionDTO> dtoList = response.body().getData();
                     executorService.execute(() -> {
                         List<RecentTransactionEntity> entityList = new ArrayList<>();
                         for (RecentTransactionDTO dto : dtoList) {
+                            String itemName = "Multiple Items";
+                            if (dto.getItems() != null && !dto.getItems().isEmpty()) {
+                                if (dto.getItems().size() == 1) {
+                                    itemName = dto.getItems().get(0).getName();
+                                } else {
+                                    itemName = dto.getItems().get(0).getName() + " +" + (dto.getItems().size() - 1);
+                                }
+                            }
                             entityList.add(new RecentTransactionEntity(
                                 dto.getId(),
-                                "Transaction #" + dto.getId(),
+                                itemName,
                                 dto.getStatus(),
                                 dto.getBorrowedAt()
                             ));
@@ -84,7 +94,7 @@ public class DashboardRepository {
             }
 
             @Override
-            public void onFailure(Call<List<RecentTransactionDTO>> call, Throwable t) {
+            public void onFailure(Call<ApiResponseDTO<List<RecentTransactionDTO>>> call, Throwable t) {
             }
         });
 

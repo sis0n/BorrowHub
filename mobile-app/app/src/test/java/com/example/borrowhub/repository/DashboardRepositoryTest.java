@@ -11,6 +11,7 @@ import com.example.borrowhub.data.local.dao.RecentTransactionDao;
 import com.example.borrowhub.data.local.entity.DashboardStatsEntity;
 import com.example.borrowhub.data.local.entity.RecentTransactionEntity;
 import com.example.borrowhub.data.remote.api.ApiService;
+import com.example.borrowhub.data.remote.dto.ApiResponseDTO;
 import com.example.borrowhub.data.remote.dto.DashboardStatsDTO;
 import com.example.borrowhub.data.remote.dto.RecentTransactionDTO;
 
@@ -53,10 +54,10 @@ public class DashboardRepositoryTest {
     private RecentTransactionDao recentTransactionDao;
 
     @Mock
-    private Call<DashboardStatsDTO> statsCall;
+    private Call<ApiResponseDTO<DashboardStatsDTO>> statsCall;
 
     @Mock
-    private Call<List<RecentTransactionDTO>> transactionsCall;
+    private Call<ApiResponseDTO<List<RecentTransactionDTO>>> transactionsCall;
 
     @Mock
     private Observer<DashboardStatsEntity> statsObserver;
@@ -75,16 +76,15 @@ public class DashboardRepositoryTest {
     @Test
     public void testGetDashboardStats_Success_UpdatesCache() {
         DashboardStatsDTO mockStats = new DashboardStatsDTO();
-        // Since fields are private, we can't easily mock setting them without reflection or constructors,
-        // but let's assume Gson would set them. For this test, we just verify the flow.
+        ApiResponseDTO<DashboardStatsDTO> responseBody = new ApiResponseDTO<>("success", "Success", mockStats);
 
         MutableLiveData<DashboardStatsEntity> cachedLiveData = new MutableLiveData<>();
         when(dashboardStatsDao.getDashboardStats()).thenReturn(cachedLiveData);
         when(apiService.getDashboardStats(anyString())).thenReturn(statsCall);
 
         doAnswer(invocation -> {
-            Callback<DashboardStatsDTO> callback = invocation.getArgument(0);
-            callback.onResponse(statsCall, Response.success(mockStats));
+            Callback<ApiResponseDTO<DashboardStatsDTO>> callback = invocation.getArgument(0);
+            callback.onResponse(statsCall, Response.success(responseBody));
             return null;
         }).when(statsCall).enqueue(any(Callback.class));
 
@@ -104,14 +104,15 @@ public class DashboardRepositoryTest {
         List<RecentTransactionDTO> mockTransactions = new ArrayList<>();
         RecentTransactionDTO transaction = new RecentTransactionDTO();
         mockTransactions.add(transaction);
+        ApiResponseDTO<List<RecentTransactionDTO>> responseBody = new ApiResponseDTO<>("success", "Success", mockTransactions);
 
         MutableLiveData<List<RecentTransactionEntity>> cachedLiveData = new MutableLiveData<>();
         when(recentTransactionDao.getRecentTransactions()).thenReturn(cachedLiveData);
         when(apiService.getRecentTransactions(anyString())).thenReturn(transactionsCall);
 
         doAnswer(invocation -> {
-            Callback<List<RecentTransactionDTO>> callback = invocation.getArgument(0);
-            callback.onResponse(transactionsCall, Response.success(mockTransactions));
+            Callback<ApiResponseDTO<List<RecentTransactionDTO>>> callback = invocation.getArgument(0);
+            callback.onResponse(transactionsCall, Response.success(responseBody));
             return null;
         }).when(transactionsCall).enqueue(any(Callback.class));
 
