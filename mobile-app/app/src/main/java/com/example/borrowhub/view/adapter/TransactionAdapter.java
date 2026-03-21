@@ -12,8 +12,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.borrowhub.R;
 import com.example.borrowhub.data.local.entity.RecentTransactionEntity;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder> {
 
@@ -57,8 +62,8 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         }
 
         public void bind(RecentTransactionEntity transaction) {
-            tvTransactionId.setText(String.valueOf(transaction.id));
-            tvTransactionDate.setText(transaction.date);
+            tvTransactionId.setText(transaction.borrowerName);
+            tvTransactionDate.setText(formatDate(transaction.date));
             tvTransactionItem.setText(transaction.itemName);
 
             String status = transaction.status;
@@ -80,6 +85,40 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
             tvTransactionStatus.setTextColor(ContextCompat.getColor(itemView.getContext(), textColorRes));
             tvTransactionStatus.setBackgroundTintList(ContextCompat.getColorStateList(itemView.getContext(), bgColorRes));
+        }
+
+        private String formatDate(String dateStr) {
+            if (dateStr == null || dateStr.isEmpty()) return "-";
+            try {
+                // Common Laravel formats: "2026-03-21 14:00:00" or "2026-03-21T14:00:00.000000Z"
+                String normalizedDate = dateStr;
+                String inputPattern;
+                
+                if (dateStr.contains("T")) {
+                    // Trim milliseconds if present
+                    if (dateStr.contains(".")) {
+                        normalizedDate = dateStr.substring(0, dateStr.indexOf("."));
+                        if (dateStr.endsWith("Z")) {
+                            normalizedDate += "Z";
+                        }
+                    }
+                    inputPattern = normalizedDate.endsWith("Z") ? "yyyy-MM-dd'T'HH:mm:ss'Z'" : "yyyy-MM-dd'T'HH:mm:ss";
+                } else {
+                    inputPattern = "yyyy-MM-dd HH:mm:ss";
+                }
+
+                SimpleDateFormat inputFormat = new SimpleDateFormat(inputPattern, Locale.US);
+                inputFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+                SimpleDateFormat outputFormat = new SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.US);
+                outputFormat.setTimeZone(TimeZone.getTimeZone("Asia/Manila"));
+
+                Date date = inputFormat.parse(normalizedDate);
+                return outputFormat.format(date);
+            } catch (ParseException e) {
+                // Return original if parsing fails
+                return dateStr;
+            }
         }
     }
 }

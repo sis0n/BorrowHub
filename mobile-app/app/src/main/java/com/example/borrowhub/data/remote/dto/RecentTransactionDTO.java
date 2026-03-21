@@ -17,6 +17,9 @@ public class RecentTransactionDTO {
     @SerializedName("items")
     private List<ItemDTO> items;
 
+    @SerializedName("student")
+    private StudentDTO student;
+
     // Getters
     public int getId() {
         return id;
@@ -32,5 +35,9 @@ public class RecentTransactionDTO {
 
     public List<ItemDTO> getItems() {
         return items;
+    }
+
+    public StudentDTO getStudent() {
+        return student;
     }
 }

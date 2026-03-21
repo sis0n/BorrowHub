@@ -10,12 +10,14 @@ public class RecentTransactionEntity {
     public int id;
 
     public String itemName;
+    public String borrowerName;
     public String status;
     public String date;
 
-    public RecentTransactionEntity(int id, String itemName, String status, String date) {
+    public RecentTransactionEntity(int id, String itemName, String borrowerName, String status, String date) {
         this.id = id;
         this.itemName = itemName;
+        this.borrowerName = borrowerName;
         this.status = status;
         this.date = date;
     }

@@ -80,9 +80,14 @@ public class DashboardRepository {
                                     itemName = dto.getItems().get(0).getName() + " +" + (dto.getItems().size() - 1);
                                 }
                             }
+                            String borrowerName = "Unknown";
+                            if (dto.getStudent() != null) {
+                                borrowerName = dto.getStudent().getName();
+                            }
                             entityList.add(new RecentTransactionEntity(
                                 dto.getId(),
                                 itemName,
+                                borrowerName,
                                 dto.getStatus(),
                                 dto.getBorrowedAt()
                             ));

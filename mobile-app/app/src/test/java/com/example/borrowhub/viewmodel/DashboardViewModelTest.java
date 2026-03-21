@@ -67,7 +67,7 @@ public class DashboardViewModelTest {
 
         MutableLiveData<List<RecentTransactionEntity>> mockTransactionsLiveData = new MutableLiveData<>();
         List<RecentTransactionEntity> mockTransactions = Arrays.asList(
-                new RecentTransactionEntity(1, "Item A", "Borrowed", "Date")
+                new RecentTransactionEntity(1, "Item A", "John Doe", "Borrowed", "Date")
         );
         mockTransactionsLiveData.setValue(mockTransactions);
         when(repository.getRecentTransactions(token)).thenReturn(mockTransactionsLiveData);
