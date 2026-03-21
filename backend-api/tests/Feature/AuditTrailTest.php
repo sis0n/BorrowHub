@@ -37,9 +37,13 @@ class AuditTrailTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
+                'status',
+                'message',
                 'data' => [
-                    '*' => [
-                        'id', 'actor_id', 'performed_by', 'action', 'details', 'created_at'
+                    'data' => [
+                        '*' => [
+                            'id', 'actor_id', 'performed_by', 'action', 'details', 'created_at'
+                        ]
                     ]
                 ]
             ]);

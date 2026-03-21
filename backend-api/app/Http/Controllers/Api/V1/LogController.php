@@ -18,12 +18,18 @@ class LogController extends Controller
     public function indexActivityLogs(Request $request)
     {
         $filters = $request->only(['search', 'action', 'per_page']);
-        return response()->json($this->logService->getActivityLogs($filters));
+        return $this->successResponse(
+            $this->logService->getActivityLogs($filters),
+            'Activity logs retrieved successfully.'
+        );
     }
 
     public function indexTransactionLogs(Request $request)
     {
         $filters = $request->only(['search', 'action', 'per_page']);
-        return response()->json($this->logService->getTransactionLogs($filters));
+        return $this->successResponse(
+            $this->logService->getTransactionLogs($filters),
+            'Transaction logs retrieved successfully.'
+        );
     }
 }

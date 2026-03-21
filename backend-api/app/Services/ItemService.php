@@ -40,8 +40,7 @@ class ItemService
 
     public function updateItem($id, array $data)
     {
-        $result = $this->itemRepository->update($id, $data);
-        $item = $this->itemRepository->findById($id);
+        $item = $this->itemRepository->update($id, $data);
 
         $this->logService->log(
             'Item Updated',
@@ -50,7 +49,7 @@ class ItemService
             $item->name
         );
 
-        return $result;
+        return $item;
     }
 
     public function deleteItem($id)
@@ -58,7 +57,7 @@ class ItemService
         $item = $this->itemRepository->findById($id);
         $result = $this->itemRepository->delete($id);
 
-        if ($item) {
+        if ($result && $item) {
             $this->logService->log(
                 'Item Deleted',
                 "Deleted item",

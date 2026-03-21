@@ -53,8 +53,7 @@ class StudentService
 
     public function updateStudent(int $id, array $data)
     {
-        $result = $this->studentRepository->update($id, $data);
-        $student = $this->studentRepository->findById($id);
+        $student = $this->studentRepository->update($id, $data);
 
         $this->logService->log(
             'Student Updated',
@@ -63,7 +62,7 @@ class StudentService
             $student->name
         );
 
-        return $result;
+        return $student;
     }
 
     public function deleteStudent(int $id)
@@ -71,7 +70,7 @@ class StudentService
         $student = $this->studentRepository->findById($id);
         $result = $this->studentRepository->delete($id);
 
-        if ($student) {
+        if ($result && $student) {
             $this->logService->log(
                 'Student Deleted',
                 "Deleted student",

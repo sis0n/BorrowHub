@@ -48,8 +48,7 @@ class UserService
             $data['password'] = Hash::make($data['password']);
         }
         
-        $result = $this->userRepository->update($id, $data);
-        $user = $this->userRepository->findById($id);
+        $user = $this->userRepository->update($id, $data);
 
         $this->logService->log(
             'User Updated',
@@ -58,7 +57,7 @@ class UserService
             $user->name
         );
 
-        return $result;
+        return $user;
     }
 
     public function deleteUser(int $id)
@@ -73,25 +72,29 @@ class UserService
 
         $result = $this->userRepository->delete($id);
 
-        $this->logService->log(
-            'User Deleted',
-            "Deleted user with username: {$user->username}",
-            (string)$user->id,
-            $user->name
-        );
+        if ($result) {
+            $this->logService->log(
+                'User Deleted',
+                "Deleted user with username: {$user->username}",
+                (string)$user->id,
+                $user->name
+            );
+        }
 
         return $result;
     }
 
     public function resetPassword(int $id)
     {
-        $defaultPassword = config('auth.default_user_password', 'borrowhub123');
+        $defaultPassword = config('auth.default_user_password');
         
-        $result = $this->userRepository->update($id, [
+        if (!$defaultPassword) {
+            throw new \RuntimeException('Default user password is not configured.');
+        }
+
+        $user = $this->userRepository->update($id, [
             'password' => Hash::make($defaultPassword)
         ]);
-
-        $user = $this->userRepository->findById($id);
 
         $this->logService->log(
             'Password Reset',
@@ -100,6 +103,6 @@ class UserService
             $user->name
         );
 
-        return $result;
+        return $user;
     }
 }
