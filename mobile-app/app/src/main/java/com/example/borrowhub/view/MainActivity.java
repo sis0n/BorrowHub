@@ -73,29 +73,24 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             });
 
-            // Correctly handle highlight state for non-bottom-nav destinations
+            // Correctly handle highlight state for all destinations
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int destId = destination.getId();
-                // Check if the destination is part of the bottom menu
-                boolean isInBottomMenu = destId == R.id.homeFragment ||
-                                         destId == R.id.inventoryFragment ||
-                                         destId == R.id.transactionFragment ||
-                                         destId == R.id.logsFragment;
+                MenuItem item = binding.bottomNavigationView.getMenu().findItem(destId);
 
-                if (!isInBottomMenu) {
-                    // Deselect all items if we are in a sub-view (like Student Management)
-                    // but NOT if we are in one of the main tabs.
+                if (item != null) {
+                    // Destination is in bottom menu, select it directly.
+                    // setChecked(true) automatically unchecks others in an exclusive group.
+                    item.setChecked(true);
+                } else {
+                    // Destination is NOT in bottom menu (e.g., Student/User Management)
+                    // Temporarily disable exclusive checkable to allow having NO items selected.
                     binding.bottomNavigationView.getMenu().setGroupCheckable(0, true, false);
                     for (int i = 0; i < binding.bottomNavigationView.getMenu().size(); i++) {
                         binding.bottomNavigationView.getMenu().getItem(i).setChecked(false);
                     }
+                    // Re-enable exclusive checkable for future bottom menu interactions.
                     binding.bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
-                } else {
-                    // Select the corresponding item in the bottom navigation view
-                    for (int i = 0; i < binding.bottomNavigationView.getMenu().size(); i++) {
-                        MenuItem item = binding.bottomNavigationView.getMenu().getItem(i);
-                        item.setChecked(item.getItemId() == destId);
-                    }
                 }
             });
         }

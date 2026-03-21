@@ -45,7 +45,7 @@ public class HomeFragment extends Fragment {
             navController.navigate(R.id.inventoryFragment));
 
         binding.btnViewAll.setOnClickListener(v -> 
-            navController.navigate(R.id.transactionFragment));
+            navController.navigate(R.id.logsFragment));
 
         // Refresh data on swipe or when returning to this fragment
         viewModel.fetchData();
