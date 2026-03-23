@@ -39,13 +39,13 @@ Route::prefix('v1')->group(function () {
         Route::get('/dashboard/recent-transactions', [DashboardController::class, 'recentTransactions']);
 
         Route::get('/categories', [CategoryController::class, 'index']);
-        
+
         Route::apiResource('items', ItemController::class);
 
         // Student Management Routes
         Route::post('/students/import', [StudentController::class, 'import']);
         Route::apiResource('students', StudentController::class);
-        
+
         // Transaction Routes
         Route::get('/transactions/active', [TransactionController::class, 'index']);
         Route::post('/transactions/borrow', [TransactionController::class, 'borrow']);

@@ -135,6 +135,9 @@
 
     <!-- Borrow form - info card -->
     <string name="transaction_date_label">Date &amp; Time:</string>
+    <string name="transaction_borrower_label">Borrower</string>
+    <string name="transaction_item_label">Item</string>
+    <string name="transaction_status_label">Status</string>
     <string name="transaction_processed_by_label">Processed by:</string>
     <string name="transaction_return_by_label">Return by:</string>
     <string name="transaction_return_by_value">End of day (Same day)</string>

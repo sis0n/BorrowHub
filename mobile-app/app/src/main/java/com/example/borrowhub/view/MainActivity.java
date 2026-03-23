@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.view.MenuItem;
 import android.widget.Toast;
+import androidx.appcompat.content.res.AppCompatResources;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         setupObservers();
 
         // Set settings overflow icon
-        binding.topAppBar.setOverflowIcon(ContextCompat.getDrawable(this, R.drawable.ic_settings));
+        binding.topAppBar.setOverflowIcon(AppCompatResources.getDrawable(this, R.drawable.ic_account_settings));
 
         // Setup Navigation
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);

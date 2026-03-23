@@ -6,16 +6,18 @@
         <item name="colorOnPrimary">@color/gray_50</item>
 
         <item name="colorSecondary">@color/gray_500</item>
-        <item name="colorSecondaryVariant">@color/gray_700</item>
-        <item name="colorOnSecondary">@color/on_secondary</item>
+        <item name="colorSecondaryVariant">@color/gray_400</item>
+        <item name="colorOnSecondary">@color/gray_50</item>
 
-        <item name="colorSurface">@color/gray_50</item>
-        <item name="colorOnSurface">@color/on_surface</item>
-        <item name="android:colorBackground">@color/gray_50</item>
-        <item name="colorOnBackground">@color/on_background</item>
+        <item name="colorSurface">@color/gray_900</item>
+        <item name="colorOnSurface">@color/gray_50</item>
+        <item name="android:colorBackground">@color/gray_900</item>
+        <item name="colorOnBackground">@color/gray_50</item>
 
-        <item name="android:statusBarColor">@color/primary_crimson_dark</item>
-        <item name="android:navigationBarColor">@color/gray_100</item>
+        <item name="colorOutlineVariant">@color/gray_700</item>
+
+        <item name="android:statusBarColor">@color/black</item>
+        <item name="android:navigationBarColor">@color/gray_900</item>
         <item name="android:windowLightStatusBar">false</item>
 
         <!-- Improved Dialog UI -->
@@ -35,4 +37,17 @@
     </style>
 
     <style name="Theme.BorrowHub" parent="Base.Theme.BorrowHub" />
+
+    <style name="Widget.App.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemIconTint">@color/bnv_item_color</item>
+        <item name="itemTextColor">@color/bnv_item_color</item>
+        <item name="itemRippleColor">@color/primary_crimson_transparent</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="itemIconSize">22dp</item>
+    </style>
+
+    <style name="ThemeOverlay.App.BottomNavigationView" parent="">
+        <item name="colorSecondaryContainer">@android:color/transparent</item>
+        <item name="colorOnSecondaryContainer">@color/primary_crimson</item>
+    </style>
 </resources>
