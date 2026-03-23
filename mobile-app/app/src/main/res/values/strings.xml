@@ -14,6 +14,7 @@
     <string name="login_failed">Invalid Credentials: Username or password is incorrect.</string>
     <string name="login_success">Login Successful</string>
     <string name="logout_failed">Logout failed. Please try again.</string>
+    <string name="logout_action">Logout</string>
     <string name="theme_mode_light">Light Mode</string>
     <string name="theme_mode_dark">Dark Mode</string>
     <string name="theme_switch_to_light">Switch to Light Mode</string>

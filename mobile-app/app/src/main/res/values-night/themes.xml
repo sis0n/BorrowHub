@@ -22,6 +22,11 @@
 
         <!-- Improved Dialog UI -->
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.App.MaterialAlertDialog</item>
+
+        <!-- Improved Toolbar and Dropdown UI -->
+        <item name="toolbarStyle">@style/Widget.App.Toolbar</item>
+        <item name="actionOverflowMenuStyle">@style/Widget.App.OverflowMenu</item>
+        <item name="popupMenuStyle">@style/Widget.App.PopupMenu</item>
     </style>
 
     <style name="ThemeOverlay.App.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">

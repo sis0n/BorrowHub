@@ -7,6 +7,7 @@
     <color name="primary_crimson_dark">#A43E4F</color>
     <color name="primary_crimson_darker">#8B3643</color>
     <color name="primary_crimson_transparent">#26C94C5D</color>
+    <color name="color_error">#DC2626</color>
 
     <color name="gray_50">#F7F8FB</color>
     <color name="gray_100">#EEF1F5</color>

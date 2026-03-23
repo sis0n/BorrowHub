@@ -22,6 +22,26 @@
 
         <!-- Improved Dialog UI -->
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.App.MaterialAlertDialog</item>
+
+        <!-- Improved Toolbar and Dropdown UI: Styles for Issue #79 -->
+        <item name="toolbarStyle">@style/Widget.App.Toolbar</item>
+        <item name="actionOverflowMenuStyle">@style/Widget.App.OverflowMenu</item>
+        <item name="popupMenuStyle">@style/Widget.App.PopupMenu</item>
+    </style>
+
+    <style name="Widget.App.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleTextAppearance">?attr/textAppearanceHeadline6</item>
+        <item name="titleTextColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="Widget.App.OverflowMenu" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+    </style>
+
+    <style name="Widget.App.PopupMenu" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">?attr/colorSurface</item>
+        <item name="android:dropDownSelector">?attr/selectableItemBackground</item>
     </style>
 
     <style name="ThemeOverlay.App.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
