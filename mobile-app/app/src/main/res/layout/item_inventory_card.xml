@@ -67,24 +67,24 @@
 
             <ImageButton
                 android:id="@+id/btnEdit"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/inventory_content_desc_edit_item"
-                android:padding="6dp"
-                android:src="@android:drawable/ic_menu_edit"
-                app:tint="@color/primary_crimson" />
+                android:padding="8dp"
+                android:src="@drawable/ic_edit"
+                app:tint="@color/student_course_badge_text" />
 
             <ImageButton
                 android:id="@+id/btnDelete"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_marginStart="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/inventory_content_desc_delete_item"
-                android:padding="6dp"
-                android:src="@android:drawable/ic_menu_delete"
-                app:tint="@color/primary_crimson" />
+                android:padding="8dp"
+                android:src="@drawable/ic_delete"
+                app:tint="@color/color_error" />
         </LinearLayout>
     </LinearLayout>
 

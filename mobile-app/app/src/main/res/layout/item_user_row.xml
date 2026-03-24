@@ -62,36 +62,36 @@
 
         <ImageButton
             android:id="@+id/btnResetPassword"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginStart="4dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/user_content_desc_reset_password"
-            android:padding="4dp"
+            android:padding="8dp"
             android:src="@drawable/ic_key"
-            app:tint="@color/primary_crimson" />
+            app:tint="@color/inventory_status_borrowed_text" />
 
         <ImageButton
             android:id="@+id/btnEdit"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginStart="4dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/user_content_desc_edit"
-            android:padding="4dp"
-            android:src="@android:drawable/ic_menu_edit"
-            app:tint="@color/primary_crimson" />
+            android:padding="8dp"
+            android:src="@drawable/ic_edit"
+            app:tint="@color/student_course_badge_text" />
 
         <ImageButton
             android:id="@+id/btnDelete"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginStart="4dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/user_content_desc_delete"
-            android:padding="4dp"
-            android:src="@android:drawable/ic_menu_delete"
-            app:tint="@color/primary_crimson" />
+            android:padding="8dp"
+            android:src="@drawable/ic_delete"
+            app:tint="@color/color_error" />
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

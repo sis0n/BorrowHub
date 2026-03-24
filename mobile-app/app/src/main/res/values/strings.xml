@@ -33,8 +33,8 @@
     <string name="dashboard_recent_transactions">Recent Transactions</string>
     <string name="dashboard_view_all">View All</string>
 
-    <string name="inventory_title">Inventory</string>
-    <string name="inventory_subtitle">Manage all borrowable resources</string>
+    <string name="inventory_title">Inventory Management</string>
+    <string name="inventory_subtitle">Manage and track all resources</string>
     <string name="inventory_search_hint">Search by item name...</string>
     <string name="inventory_empty_state">No items found matching your criteria.</string>
     <string name="inventory_field_item_name">Item Name</string>
