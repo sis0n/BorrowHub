@@ -79,30 +79,40 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         void bind(ItemEntity item, ItemActionListener listener) {
             tvItemName.setText(item.name);
             tvType.setText(item.type);
-            tvStatus.setText(item.status);
+            
+            String displayStatus = item.status;
+            if ("active".equalsIgnoreCase(item.status)) {
+                displayStatus = (item.availableQuantity > 0) ? "Available" : "Borrowed";
+            } else if ("maintenance".equalsIgnoreCase(item.status)) {
+                displayStatus = "Maintenance";
+            } else if ("archived".equalsIgnoreCase(item.status)) {
+                displayStatus = "Archived";
+            }
+            
+            tvStatus.setText(displayStatus);
             tvStock.setText(itemView.getContext().getString(
                     R.string.inventory_stock_format,
                     item.availableQuantity,
                     item.totalQuantity
             ));
 
-            applyStatusColor(itemView.getContext(), item.status);
+            applyStatusColor(itemView.getContext(), displayStatus);
 
             btnEdit.setOnClickListener(v -> listener.onEditItem(item));
             btnDelete.setOnClickListener(v -> listener.onDeleteItem(item));
         }
 
-        private void applyStatusColor(Context context, String status) {
+        private void applyStatusColor(Context context, String displayStatus) {
             int textColor;
             int bgColor;
 
-            if (InventoryConstants.STATUS_AVAILABLE.equalsIgnoreCase(status)) {
+            if ("Available".equalsIgnoreCase(displayStatus)) {
                 textColor = ContextCompat.getColor(context, R.color.inventory_status_available_text);
                 bgColor = ContextCompat.getColor(context, R.color.inventory_status_available_bg);
-            } else if (InventoryConstants.STATUS_BORROWED.equalsIgnoreCase(status)) {
+            } else if ("Borrowed".equalsIgnoreCase(displayStatus)) {
                 textColor = ContextCompat.getColor(context, R.color.inventory_status_borrowed_text);
                 bgColor = ContextCompat.getColor(context, R.color.inventory_status_borrowed_bg);
-            } else if (InventoryConstants.STATUS_MAINTENANCE.equalsIgnoreCase(status)) {
+            } else if ("Maintenance".equalsIgnoreCase(displayStatus)) {
                 textColor = ContextCompat.getColor(context, R.color.inventory_status_maintenance_text);
                 bgColor = ContextCompat.getColor(context, R.color.inventory_status_maintenance_bg);
             } else {

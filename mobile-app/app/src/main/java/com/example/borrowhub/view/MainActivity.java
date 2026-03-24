@@ -133,9 +133,13 @@ public class MainActivity extends AppCompatActivity {
         // Setup theme toggle state
         updateThemeUI(dropdownBinding.ivThemeIcon, dropdownBinding.tvThemeText);
 
+        float density = getResources().getDisplayMetrics().density;
+        int widthInPx = (int) (220 * density);
+        int marginInPx = (int) (16 * density);
+
         PopupWindow popupWindow = new PopupWindow(
                 dropdownBinding.getRoot(),
-                ViewGroup.LayoutParams.WRAP_CONTENT,
+                widthInPx,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 true
         );
@@ -171,12 +175,8 @@ public class MainActivity extends AppCompatActivity {
             popupWindow.dismiss();
         });
 
-        // Measure content for correct positioning
-        dropdownBinding.getRoot().measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        int width = dropdownBinding.getRoot().getMeasuredWidth();
-        
-        // Show as dropdown with offsets to align the right edge with the anchor
-        popupWindow.showAsDropDown(anchor, -(width - anchor.getWidth()), 12);
+        // Show as dropdown with offsets to align near the right edge of the screen
+        popupWindow.showAsDropDown(anchor, -(widthInPx - anchor.getWidth()) - marginInPx, 12);
     }
 
     private void updateThemeUI(android.widget.ImageView icon, android.widget.TextView text) {

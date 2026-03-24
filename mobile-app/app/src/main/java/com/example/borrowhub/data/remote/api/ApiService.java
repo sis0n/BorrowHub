@@ -20,6 +20,9 @@ import com.example.borrowhub.data.remote.dto.UserDTO;
 import com.example.borrowhub.data.remote.dto.CreateUserRequestDTO;
 import com.example.borrowhub.data.remote.dto.UpdateUserRequestDTO;
 import com.example.borrowhub.data.remote.dto.ResetPasswordRequestDTO;
+import com.example.borrowhub.data.remote.dto.BorrowItemRequestDTO;
+import com.example.borrowhub.data.remote.dto.BorrowRequestDTO;
+import com.example.borrowhub.data.remote.dto.BorrowRecordDTO;
 
 import java.util.List;
 
@@ -77,6 +80,16 @@ public interface ApiService {
 
     // Inventory - Items
     @GET("api/v1/items")
+    Call<ApiResponseDTO<List<ItemDTO>>> getItems(
+            @Header("Authorization") String token,
+            @Query("page") Integer page,
+            @Query("per_page") Integer perPage,
+            @Query("search") String search,
+            @Query("category_id") Integer categoryId,
+            @Query("status") String status
+    );
+
+    @GET("api/v1/items")
     Call<ApiResponseDTO<List<ItemDTO>>> getItems(@Header("Authorization") String token);
 
     @GET("api/v1/items/{id}")
@@ -96,7 +109,7 @@ public interface ApiService {
     Call<ApiResponseDTO<List<StudentDTO>>> getStudents(@Header("Authorization") String token);
 
     @GET("api/v1/students/{id}")
-    Call<ApiResponseDTO<StudentDTO>> getStudent(@Header("Authorization") String token, @Path("id") long studentId);
+    Call<ApiResponseDTO<StudentDTO>> getStudent(@Header("Authorization") String token, @Path("id") String idOrNumber);
 
     @POST("api/v1/students")
     Call<ApiResponseDTO<StudentDTO>> createStudent(@Header("Authorization") String token, @Body CreateStudentRequestDTO request);
@@ -109,6 +122,16 @@ public interface ApiService {
 
     @POST("api/v1/students/import")
     Call<ApiResponseDTO<Void>> importStudents(@Header("Authorization") String token, @Body ImportStudentsRequestDTO request);
+
+    // Transaction Management
+    @GET("api/v1/transactions/active")
+    Call<ApiResponseDTO<List<BorrowRecordDTO>>> getActiveTransactions(@Header("Authorization") String token);
+
+    @POST("api/v1/transactions/borrow")
+    Call<ApiResponseDTO<BorrowRecordDTO>> borrow(@Header("Authorization") String token, @Body BorrowRequestDTO request);
+
+    @POST("api/v1/transactions/{id}/return")
+    Call<ApiResponseDTO<BorrowRecordDTO>> returnItem(@Header("Authorization") String token, @Path("id") int transactionId);
 
     // System Logs
     @GET("api/v1/activity-logs")

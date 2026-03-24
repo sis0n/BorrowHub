@@ -23,7 +23,10 @@ class ItemRepository implements ItemRepositoryInterface
             $query->where('status', $filters['status']);
         }
 
-        return $query->paginate(config('borrow.pagination_size', 15));
+        $query->orderBy('name', 'asc');
+
+        $perPage = isset($filters['per_page']) ? (int)$filters['per_page'] : config('borrow.pagination_size', 15);
+        return $query->paginate($perPage);
     }
 
     public function findById($id, bool $lock = false)

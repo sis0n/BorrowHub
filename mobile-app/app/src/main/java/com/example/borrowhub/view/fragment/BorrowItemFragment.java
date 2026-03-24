@@ -78,8 +78,8 @@ public class BorrowItemFragment extends Fragment {
             }
 
             @Override
-            public void onNameChanged(int position, String name) {
-                viewModel.updateItemRowName(position, name);
+            public void onNameChanged(int position, String name, int itemId) {
+                viewModel.updateItemRowName(position, name, itemId);
             }
 
             @Override
@@ -129,6 +129,27 @@ public class BorrowItemFragment extends Fragment {
         viewModel.getItemRows().observe(getViewLifecycleOwner(), rows -> {
             if (rows != null) {
                 rowAdapter.updateRows(rows);
+            }
+        });
+
+        viewModel.getCategories().observe(getViewLifecycleOwner(), categories -> {
+            if (categories != null) {
+                rowAdapter.setCategories(categories);
+            }
+        });
+
+        viewModel.getAllItems().observe(getViewLifecycleOwner(), items -> {
+            if (items != null) {
+                rowAdapter.setAllItems(items);
+            }
+        });
+
+        // Observe loading state
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), loading -> {
+            if (loading != null) {
+                binding.pbLoading.setVisibility(loading ? View.VISIBLE : View.GONE);
+                binding.btnSubmitBorrow.setEnabled(!loading);
+                binding.btnAddItemRow.setEnabled(!loading);
             }
         });
 

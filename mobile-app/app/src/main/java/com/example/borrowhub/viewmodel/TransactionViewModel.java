@@ -1,51 +1,41 @@
 package com.example.borrowhub.viewmodel;
 
 import android.app.Application;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.borrowhub.data.local.AppDatabase;
+import com.example.borrowhub.data.local.SessionManager;
+import com.example.borrowhub.data.local.entity.CategoryEntity;
+import com.example.borrowhub.data.local.entity.ItemEntity;
+import com.example.borrowhub.data.remote.dto.BorrowItemRequestDTO;
+import com.example.borrowhub.data.remote.dto.BorrowRecordDTO;
+import com.example.borrowhub.data.remote.dto.BorrowRequestDTO;
+import com.example.borrowhub.data.remote.dto.ItemDTO;
+import com.example.borrowhub.data.remote.dto.StudentDTO;
+import com.example.borrowhub.repository.ItemRepository;
+import com.example.borrowhub.repository.StudentRepository;
+import com.example.borrowhub.repository.TransactionRepository;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 public class TransactionViewModel extends AndroidViewModel {
 
-    // --- Simulated Databases (from master) ---
-    private static final Map<String, String[]> STUDENT_DATABASE = new HashMap<>();
-    public static final String[] ITEM_TYPES = {"Equipment", "Laptop"};
-    public static final Map<String, String[]> ITEMS_BY_TYPE = new HashMap<>();
+    private final TransactionRepository transactionRepository;
+    private final StudentRepository studentRepository;
+    private final ItemRepository itemRepository;
 
-    static {
-        STUDENT_DATABASE.put("2024-12345", new String[]{"Sarah Chen", "BS Computer Science"});
-        STUDENT_DATABASE.put("2024-23456", new String[]{"Emily Rodriguez", "BS Information Technology"});
-        STUDENT_DATABASE.put("2024-34567", new String[]{"Mark Santos", "BS Computer Engineering"});
+    // --- Models ---
 
-        ITEMS_BY_TYPE.put("Equipment", new String[]{
-                "Projector - Epson EB-X41",
-                "Camera - Canon EOS R6",
-                "Conference Microphone",
-                "Extension Cable 10m",
-                "Wireless Presenter",
-                "Tripod Stand",
-                "HDMI Cable 5m"
-        });
-        ITEMS_BY_TYPE.put("Laptop", new String[]{
-                "Laptop - Dell XPS 15",
-                "Laptop - MacBook Pro 16",
-                "Laptop - Lenovo ThinkPad"
-        });
-    }
-
-    // --- Models (merged) ---
-
-    /** Lightweight in-memory model for an active borrow transaction (from feature branch). */
+    /** Lightweight in-memory model for an active borrow transaction. */
     public static class ActiveBorrow {
         public final long id;
         public final String studentNumber;
@@ -70,46 +60,76 @@ public class TransactionViewModel extends AndroidViewModel {
         }
     }
 
-    /** Model for dynamic item rows in the Borrow form (from master). */
+    /** Model for dynamic item rows in the Borrow form. */
     public static class ItemRow {
         public String type;
         public String name;
+        public int itemId;
 
         public ItemRow() {
             this.type = "";
             this.name = "";
+            this.itemId = 0;
         }
 
         public ItemRow(String type, String name) {
             this.type = type == null ? "" : type;
             this.name = name == null ? "" : name;
+            this.itemId = 0;
+        }
+        
+        public ItemRow(String type, String name, int itemId) {
+            this.type = type == null ? "" : type;
+            this.name = name == null ? "" : name;
+            this.itemId = itemId;
         }
     }
 
-    // --- State: Borrow Workflow (from master) ---
+    // --- State: Borrow Workflow ---
     private final MutableLiveData<String> studentNameInput = new MutableLiveData<>("");
     private final MutableLiveData<String> courseInput = new MutableLiveData<>("");
+    private final MutableLiveData<Long> studentIdFound = new MutableLiveData<>(null);
     private final MutableLiveData<Boolean> studentFound = new MutableLiveData<>(false);
     private final MutableLiveData<List<ItemRow>> itemRows = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Boolean> submitted = new MutableLiveData<>(false);
     private final MutableLiveData<String> submitError = new MutableLiveData<>(null);
+    private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 
-    // --- State: Return Workflow (from feature branch) ---
-    private final MutableLiveData<List<ActiveBorrow>> activeBorrows =
-            new MutableLiveData<>(seedActiveBorrows());
-    private final MutableLiveData<List<ActiveBorrow>> filteredBorrows =
-            new MutableLiveData<>(new ArrayList<>());
+    // --- State: Return Workflow ---
+    private final MutableLiveData<List<ActiveBorrow>> activeBorrows = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<List<ActiveBorrow>> filteredBorrows = new MutableLiveData<>(new ArrayList<>());
     private String normalizedSearch = "";
 
+    // --- Data: Inventory ---
+    private final LiveData<List<CategoryEntity>> categories;
+    private final LiveData<List<ItemEntity>> allItems;
+
     public TransactionViewModel(@NonNull Application application) {
+        this(application,
+                new TransactionRepository(new SessionManager(application)),
+                new StudentRepository(AppDatabase.getInstance(application), new SessionManager(application)),
+                new ItemRepository(AppDatabase.getInstance(application), new SessionManager(application)));
+    }
+
+    public TransactionViewModel(@NonNull Application application,
+                                TransactionRepository transactionRepository,
+                                StudentRepository studentRepository,
+                                ItemRepository itemRepository) {
         super(application);
+        this.transactionRepository = transactionRepository;
+        this.studentRepository = studentRepository;
+        this.itemRepository = itemRepository;
+
+        this.categories = itemRepository.getAllCategories();
+        this.allItems = itemRepository.getAllItems();
+
         // Initialize Borrow form
         List<ItemRow> initial = new ArrayList<>();
         initial.add(new ItemRow());
         itemRows.setValue(initial);
 
-        // Initialize Return list
-        applyFilters();
+        // Fetch initial active transactions
+        fetchActiveTransactions();
     }
 
     // --- Getters: Borrow Workflow ---
@@ -119,28 +139,40 @@ public class TransactionViewModel extends AndroidViewModel {
     public LiveData<List<ItemRow>> getItemRows() { return itemRows; }
     public LiveData<Boolean> isSubmitted() { return submitted; }
     public LiveData<String> getSubmitError() { return submitError; }
+    public LiveData<Boolean> getIsLoading() { return isLoading; }
+    public LiveData<List<CategoryEntity>> getCategories() { return categories; }
+    public LiveData<List<ItemEntity>> getAllItems() { return allItems; }
 
     // --- Getters: Return Workflow ---
     public LiveData<List<ActiveBorrow>> getFilteredBorrows() { return filteredBorrows; }
 
     // --- Logic: Student Lookup ---
     public void lookupStudent(String studentNumber) {
-        if (studentNumber == null || studentNumber.trim().isEmpty()) {
+        if (studentNumber == null || studentNumber.trim().length() < 3) {
             studentNameInput.setValue("");
             courseInput.setValue("");
             studentFound.setValue(false);
+            studentIdFound.setValue(null);
             return;
         }
-        String[] info = STUDENT_DATABASE.get(studentNumber.trim());
-        if (info != null) {
-            studentNameInput.setValue(info[0]);
-            courseInput.setValue(info[1]);
-            studentFound.setValue(true);
-        } else {
-            studentNameInput.setValue("");
-            courseInput.setValue("");
-            studentFound.setValue(false);
-        }
+        
+        studentRepository.getStudentByNumber(studentNumber.trim(), new StudentRepository.OperationCallbackWithData<StudentDTO>() {
+            @Override
+            public void onSuccess(StudentDTO data) {
+                studentNameInput.postValue(data.getName());
+                courseInput.postValue(data.getCourse());
+                studentFound.postValue(true);
+                studentIdFound.postValue(data.getId());
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                studentNameInput.postValue("");
+                courseInput.postValue("");
+                studentFound.postValue(false);
+                studentIdFound.postValue(null);
+            }
+        });
     }
 
     // --- Logic: Borrow Row Management ---
@@ -163,14 +195,16 @@ public class TransactionViewModel extends AndroidViewModel {
         if (index >= 0 && index < current.size()) {
             current.get(index).type = type == null ? "" : type;
             current.get(index).name = "";
+            current.get(index).itemId = 0;
             itemRows.setValue(current);
         }
     }
 
-    public void updateItemRowName(int index, String name) {
+    public void updateItemRowName(int index, String name, int itemId) {
         List<ItemRow> current = deepCopy(itemRows.getValue());
         if (index >= 0 && index < current.size()) {
             current.get(index).name = name == null ? "" : name;
+            current.get(index).itemId = itemId;
             itemRows.setValue(current);
         }
     }
@@ -182,15 +216,43 @@ public class TransactionViewModel extends AndroidViewModel {
             submitError.setValue("Please complete all borrower fields.");
             return;
         }
-        List<ItemRow> rows = deepCopy(itemRows.getValue());
+        List<ItemRow> rows = itemRows.getValue();
+        if (rows == null || rows.isEmpty()) {
+            submitError.setValue("Please add at least one item.");
+            return;
+        }
+
+        List<BorrowItemRequestDTO> itemsToBorrow = new ArrayList<>();
         for (ItemRow row : rows) {
-            if (isBlank(row.name)) {
+            if (row.itemId == 0) {
                 submitError.setValue("Please complete all item selections.");
                 return;
             }
+            itemsToBorrow.add(new BorrowItemRequestDTO(row.itemId, 1));
         }
-        submitError.setValue(null);
-        submitted.setValue(true);
+
+        isLoading.setValue(true);
+        BorrowRequestDTO request = new BorrowRequestDTO(
+                studentIdFound.getValue(),
+                studentNumber.trim(),
+                collateral.trim(),
+                itemsToBorrow
+        );
+
+        transactionRepository.borrow(request, new TransactionRepository.OperationCallback() {
+            @Override
+            public void onSuccess() {
+                isLoading.postValue(false);
+                submitted.postValue(true);
+                fetchActiveTransactions(); // Refresh the return list
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                isLoading.postValue(false);
+                submitError.postValue(errorMessage);
+            }
+        });
     }
 
     public void clearSubmitError() { submitError.setValue(null); }
@@ -199,6 +261,7 @@ public class TransactionViewModel extends AndroidViewModel {
         studentNameInput.setValue("");
         courseInput.setValue("");
         studentFound.setValue(false);
+        studentIdFound.setValue(null);
         List<ItemRow> initial = new ArrayList<>();
         initial.add(new ItemRow());
         itemRows.setValue(initial);
@@ -207,6 +270,21 @@ public class TransactionViewModel extends AndroidViewModel {
     }
 
     // --- Logic: Return Workflow ---
+    public void fetchActiveTransactions() {
+        MutableLiveData<List<BorrowRecordDTO>> rawData = new MutableLiveData<>();
+        rawData.observeForever(records -> {
+            if (records != null) {
+                List<ActiveBorrow> mapped = new ArrayList<>();
+                for (BorrowRecordDTO dto : records) {
+                    mapped.add(mapDtoToActiveBorrow(dto));
+                }
+                activeBorrows.setValue(mapped);
+                applyFilters();
+            }
+        });
+        transactionRepository.getActiveTransactions(rawData);
+    }
+
     public void setSearchQuery(String query) {
         String trimmed = query == null ? "" : query.trim();
         normalizedSearch = trimmed.toLowerCase(Locale.US);
@@ -214,19 +292,30 @@ public class TransactionViewModel extends AndroidViewModel {
     }
 
     public void processReturn(long borrowId) {
-        List<ActiveBorrow> current = safeList(activeBorrows.getValue());
-        List<ActiveBorrow> updated = new ArrayList<>();
-        for (ActiveBorrow borrow : current) {
-            if (borrow.id != borrowId) {
-                updated.add(borrow);
+        isLoading.setValue(true);
+        transactionRepository.returnItem((int) borrowId, new TransactionRepository.OperationCallback() {
+            @Override
+            public void onSuccess() {
+                isLoading.postValue(false);
+                fetchActiveTransactions(); // Refresh the list
             }
-        }
-        activeBorrows.setValue(updated);
-        applyFilters();
+
+            @Override
+            public void onError(String errorMessage) {
+                isLoading.postValue(false);
+                // We could use a different error livedata for return, but let's reuse submitError for simplicity
+                submitError.postValue(errorMessage);
+            }
+        });
     }
 
     private void applyFilters() {
-        List<ActiveBorrow> source = safeList(activeBorrows.getValue());
+        List<ActiveBorrow> source = activeBorrows.getValue();
+        if (source == null) {
+            filteredBorrows.setValue(new ArrayList<>());
+            return;
+        }
+
         if (normalizedSearch.isEmpty()) {
             filteredBorrows.setValue(source);
             return;
@@ -258,14 +347,10 @@ public class TransactionViewModel extends AndroidViewModel {
         List<ItemRow> copy = new ArrayList<>();
         if (source != null) {
             for (ItemRow row : source) {
-                copy.add(new ItemRow(row.type, row.name));
+                copy.add(new ItemRow(row.type, row.name, row.itemId));
             }
         }
         return copy;
-    }
-
-    private List<ActiveBorrow> safeList(List<ActiveBorrow> source) {
-        return source == null ? new ArrayList<>() : new ArrayList<>(source);
     }
 
     private boolean isBlank(String value) {
@@ -282,28 +367,45 @@ public class TransactionViewModel extends AndroidViewModel {
         return sdf.format(new Date());
     }
 
-    private List<ActiveBorrow> seedActiveBorrows() {
-        List<ActiveBorrow> seed = new ArrayList<>();
+    private ActiveBorrow mapDtoToActiveBorrow(BorrowRecordDTO dto) {
+        List<String> itemNames = new ArrayList<>();
+        if (dto.getItems() != null) {
+            for (ItemDTO item : dto.getItems()) {
+                itemNames.add(item.getName());
+            }
+        }
 
-        List<String> items1 = new ArrayList<>();
-        items1.add("Projector - Epson EB-X41");
-        seed.add(new ActiveBorrow(1, "2024-12345", "Sarah Chen",
-                "BS Computer Science", "Employee ID", items1,
-                "Feb 18, 2026", "09:30 AM"));
+        String studentName = "Unknown";
+        String studentNumber = "N/A";
+        String course = "N/A";
 
-        List<String> items2 = new ArrayList<>();
-        items2.add("Camera - Canon EOS R6");
-        seed.add(new ActiveBorrow(2, "STU4521", "Emily Rodriguez",
-                "BSCS-3", "Student ID", items2,
-                "Feb 17, 2026", "02:15 PM"));
+        if (dto.getStudent() != null) {
+            studentName = dto.getStudent().getName();
+            studentNumber = dto.getStudent().getStudentNumber();
+            course = dto.getStudent().getCourse();
+        }
 
-        List<String> items3 = new ArrayList<>();
-        items3.add("Laptop - Dell XPS 15");
-        items3.add("HDMI Cable 5m");
-        seed.add(new ActiveBorrow(3, "EMP3107", "David Kim",
-                "CS Faculty", "Employee ID", items3,
-                "Feb 16, 2026", "11:00 AM"));
+        // Format date from backend (e.g., 2026-03-10T12:00:00Z)
+        String borrowDate = dto.getBorrowedAt();
+        String borrowTime = "";
+        try {
+            // Simple display formatting - in a real app use a proper parser
+            if (borrowDate != null && borrowDate.contains("T")) {
+                String[] parts = borrowDate.split("T");
+                borrowDate = parts[0];
+                borrowTime = parts[1].substring(0, 5);
+            }
+        } catch (Exception ignored) {}
 
-        return seed;
+        return new ActiveBorrow(
+                dto.getId(),
+                studentNumber,
+                studentName,
+                course,
+                dto.getCollateral(),
+                itemNames,
+                borrowDate,
+                borrowTime
+        );
     }
 }

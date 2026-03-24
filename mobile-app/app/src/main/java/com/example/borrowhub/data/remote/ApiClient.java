@@ -21,7 +21,7 @@ public class ApiClient {
     private ApiClient(SessionManager sessionManager) {
         this.sessionManager = sessionManager;
 
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(message -> android.util.Log.d("OkHttp", message));
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
@@ -30,16 +30,16 @@ public class ApiClient {
                     Request originalRequest = chain.request();
                     String authToken = this.sessionManager.getAuthToken();
 
-                    if (authToken == null || authToken.trim().isEmpty()) {
-                        return chain.proceed(originalRequest);
+                    Request.Builder builder = originalRequest.newBuilder()
+                            .header("Accept", "application/json");
+
+                    if (authToken != null && !authToken.trim().isEmpty()) {
+                        // Siguraduhin na isa lang ang "Bearer " prefix
+                        String bearerToken = authToken.startsWith("Bearer ") ? authToken : "Bearer " + authToken;
+                        builder.header("Authorization", bearerToken);
                     }
 
-                    String bearerToken = authToken.startsWith("Bearer ") ? authToken : "Bearer " + authToken;
-                    Request requestWithAuth = originalRequest.newBuilder()
-                            .header("Authorization", bearerToken)
-                            .build();
-
-                    return chain.proceed(requestWithAuth);
+                    return chain.proceed(builder.build());
                 })
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)

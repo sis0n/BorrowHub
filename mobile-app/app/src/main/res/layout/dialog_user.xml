@@ -1,52 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingStart="20dp"
-    android:paddingEnd="20dp"
-    android:paddingTop="8dp">
+    android:scrollbars="vertical"
+    android:fadeScrollbars="false">
 
-    <com.google.android.material.textfield.TextInputLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/user_field_full_name">
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etFullName"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textCapWords"
-            android:maxLines="1" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:hint="@string/user_field_full_name">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:hint="@string/user_field_username">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etFullName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapWords"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etUsername"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
-            android:maxLines="1" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginTop="12dp"
+            android:hint="@string/user_field_username">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:hint="@string/user_field_role"
-        app:endIconMode="dropdown_menu">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <AutoCompleteTextView
-            android:id="@+id/acRole"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="none" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_marginTop="12dp"
+            android:hint="@string/user_field_role"
+            app:endIconMode="dropdown_menu">
 
-</LinearLayout>
+            <AutoCompleteTextView
+                android:id="@+id/acRole"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

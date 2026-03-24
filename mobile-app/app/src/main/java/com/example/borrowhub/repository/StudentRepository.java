@@ -106,7 +106,7 @@ public class StudentRepository {
      */
     public void createStudent(String studentNumber, String name, String course,
                               OperationCallback callback) {
-        String token = "Bearer " + sessionManager.getAuthToken();
+        String token = getAuthHeader();
         CreateStudentRequestDTO request = new CreateStudentRequestDTO(studentNumber, name, course);
 
         apiService.createStudent(token, request).enqueue(new Callback<ApiResponseDTO<StudentDTO>>() {
@@ -140,7 +140,7 @@ public class StudentRepository {
      */
     public void updateStudent(long studentId, String studentNumber, String name, String course,
                               OperationCallback callback) {
-        String token = "Bearer " + sessionManager.getAuthToken();
+        String token = getAuthHeader();
         UpdateStudentRequestDTO request = new UpdateStudentRequestDTO(studentNumber, name, course);
 
         apiService.updateStudent(token, studentId, request).enqueue(new Callback<ApiResponseDTO<StudentDTO>>() {
@@ -173,7 +173,7 @@ public class StudentRepository {
      * Delete a student via API, then remove from local database.
      */
     public void deleteStudent(long studentId, OperationCallback callback) {
-        String token = "Bearer " + sessionManager.getAuthToken();
+        String token = getAuthHeader();
 
         apiService.deleteStudent(token, studentId).enqueue(new Callback<ApiResponseDTO<Void>>() {
             @Override
@@ -203,7 +203,7 @@ public class StudentRepository {
      * Bulk import students via API.
      */
     public void importStudents(List<CreateStudentRequestDTO> students, OperationCallback callback) {
-        String token = "Bearer " + sessionManager.getAuthToken();
+        String token = getAuthHeader();
         ImportStudentsRequestDTO request = new ImportStudentsRequestDTO(students);
 
         apiService.importStudents(token, request).enqueue(new Callback<ApiResponseDTO<Void>>() {
@@ -230,8 +230,39 @@ public class StudentRepository {
     /**
      * Sync all students from remote API to local database.
      */
+    /**
+     * Get a student by student number or ID from API.
+     */
+    public void getStudentByNumber(String studentNumber, OperationCallbackWithData<StudentDTO> callback) {
+        String token = getAuthHeader();
+
+        apiService.getStudent(token, studentNumber).enqueue(new Callback<ApiResponseDTO<StudentDTO>>() {
+            @Override
+            public void onResponse(Call<ApiResponseDTO<StudentDTO>> call,
+                                   Response<ApiResponseDTO<StudentDTO>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    StudentDTO dto = response.body().getData();
+                    // Sync to local database
+                    executorService.execute(() -> {
+                        studentDao.insert(convertDtoToEntity(dto));
+                    });
+                    if (callback != null) callback.onSuccess(dto);
+                } else {
+                    Log.e(TAG, "Failed to get student: " + response.code());
+                    if (callback != null) callback.onError("Student not found");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponseDTO<StudentDTO>> call, Throwable t) {
+                Log.e(TAG, "Error getting student", t);
+                if (callback != null) callback.onError(t.getMessage());
+            }
+        });
+    }
+
     private void syncStudentsFromApi() {
-        String token = "Bearer " + sessionManager.getAuthToken();
+        String token = getAuthHeader();
 
         apiService.getStudents(token).enqueue(new Callback<ApiResponseDTO<List<StudentDTO>>>() {
             @Override
@@ -260,6 +291,14 @@ public class StudentRepository {
                 Log.e(TAG, "Error syncing students from API", t);
             }
         });
+    }
+
+    private String getAuthHeader() {
+        String token = sessionManager.getAuthToken();
+        if (token == null || token.trim().isEmpty()) {
+            return null;
+        }
+        return token.startsWith("Bearer ") ? token : "Bearer " + token;
     }
 
     private StudentEntity convertDtoToEntity(StudentDTO dto) {
@@ -352,6 +391,11 @@ public class StudentRepository {
 
     public interface OperationCallback {
         void onSuccess();
+        void onError(String errorMessage);
+    }
+
+    public interface OperationCallbackWithData<T> {
+        void onSuccess(T data);
         void onError(String errorMessage);
     }
 }

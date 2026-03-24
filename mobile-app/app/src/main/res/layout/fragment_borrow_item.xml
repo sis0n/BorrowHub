@@ -361,4 +361,11 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <ProgressBar
+        android:id="@+id/pbLoading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
 </FrameLayout>

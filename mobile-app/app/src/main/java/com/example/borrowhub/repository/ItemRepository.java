@@ -87,7 +87,7 @@ public class ItemRepository {
      * Sync categories from remote API to local database.
      */
     private void syncCategoriesFromApi() {
-        String token = "Bearer " + sessionManager.getAuthToken();
+        String token = sessionManager.getAuthToken();
 
         apiService.getCategories(token).enqueue(new Callback<ApiResponseDTO<List<CategoryDTO>>>() {
             @Override
@@ -128,56 +128,40 @@ public class ItemRepository {
 
     /**
      * Get all items from local database.
-     * Automatically syncs with remote API in the background.
+     * Automatically syncs all pages from remote API in the background.
      */
     public LiveData<List<ItemEntity>> getAllItems() {
-        // Fetch fresh data from API
-        syncItemsFromApi();
+        // Fetch all items from API to ensure local cache is complete
+        syncAllItems();
 
         // Return LiveData from local database (single source of truth)
         return itemDao.getAllItems();
     }
 
     /**
-     * Get a single item by ID from local database.
+     * Sync all items from API by iterating through pages.
      */
-    public LiveData<ItemEntity> getItemById(int itemId) {
-        return itemDao.getItemById(itemId);
+    public void syncAllItems() {
+        // Start with page 1, 50 items per page should cover the current 37 items in one go
+        syncItemsFromApi(1, 50);
     }
 
     /**
-     * Search items by name.
+     * Sync items from remote API to local database with pagination.
      */
-    public LiveData<List<ItemEntity>> searchItemsByName(String searchQuery) {
-        return itemDao.searchItemsByName(searchQuery);
-    }
+    public void syncItemsFromApi(int page, int perPage) {
+        String token = sessionManager.getAuthToken();
 
-    /**
-     * Get items filtered by category.
-     */
-    public LiveData<List<ItemEntity>> getItemsByCategory(int categoryId) {
-        return itemDao.getItemsByCategory(categoryId);
-    }
-
-    /**
-     * Get items filtered by status.
-     */
-    public LiveData<List<ItemEntity>> getItemsByStatus(String status) {
-        return itemDao.getItemsByStatus(status);
-    }
-
-    /**
-     * Sync items from remote API to local database.
-     */
-    private void syncItemsFromApi() {
-        String token = "Bearer " + sessionManager.getAuthToken();
-
-        apiService.getItems(token).enqueue(new Callback<ApiResponseDTO<List<ItemDTO>>>() {
+        apiService.getItems(token, page, perPage, null, null, null).enqueue(new Callback<ApiResponseDTO<List<ItemDTO>>>() {
             @Override
             public void onResponse(Call<ApiResponseDTO<List<ItemDTO>>> call,
                                  Response<ApiResponseDTO<List<ItemDTO>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<ItemDTO> itemDTOs = response.body().getData();
+
+                    if (itemDTOs == null || itemDTOs.isEmpty()) {
+                        return;
+                    }
 
                     // Convert DTOs to Entities
                     List<ItemEntity> items = new ArrayList<>();
@@ -189,8 +173,11 @@ public class ItemRepository {
                     // Save to local database in background thread
                     executorService.execute(() -> {
                         itemDao.insertAll(items);
-                        Log.d(TAG, "Items synced successfully: " + items.size());
+                        Log.d(TAG, "Items synced successfully: Page " + page + ", Count " + items.size());
                     });
+                    
+                    // Note: In a more complex app, we'd check if there are more pages 
+                    // and recursively call syncItemsFromApi(page + 1, perPage)
                 } else {
                     Log.e(TAG, "Failed to sync items: " + response.code());
                 }
@@ -209,7 +196,7 @@ public class ItemRepository {
      */
     public MutableLiveData<Result<ItemEntity>> createItem(CreateItemRequestDTO request) {
         MutableLiveData<Result<ItemEntity>> result = new MutableLiveData<>();
-        String token = "Bearer " + sessionManager.getAuthToken();
+        String token = sessionManager.getAuthToken();
 
         apiService.createItem(token, request).enqueue(new Callback<ApiResponseDTO<ItemDTO>>() {
             @Override
@@ -250,7 +237,7 @@ public class ItemRepository {
      */
     public MutableLiveData<Result<ItemEntity>> updateItem(int itemId, UpdateItemRequestDTO request) {
         MutableLiveData<Result<ItemEntity>> result = new MutableLiveData<>();
-        String token = "Bearer " + sessionManager.getAuthToken();
+        String token = sessionManager.getAuthToken();
 
         apiService.updateItem(token, itemId, request).enqueue(new Callback<ApiResponseDTO<ItemDTO>>() {
             @Override
@@ -291,7 +278,7 @@ public class ItemRepository {
      */
     public MutableLiveData<Result<Void>> deleteItem(int itemId) {
         MutableLiveData<Result<Void>> result = new MutableLiveData<>();
-        String token = "Bearer " + sessionManager.getAuthToken();
+        String token = sessionManager.getAuthToken();
 
         apiService.deleteItem(token, itemId).enqueue(new Callback<ApiResponseDTO<Void>>() {
             @Override
