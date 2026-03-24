@@ -106,7 +106,7 @@
     <string name="user_field_full_name">Full Name</string>
     <string name="user_field_username">Username</string>
     <string name="user_field_role">Role</string>
-    <string name="user_username_format">/@%1$s</string>
+    <string name="user_username_format">@%1$s</string>
     <string name="user_role_admin">Admin</string>
     <string name="user_role_staff">Staff</string>
     <string name="user_content_desc_reset_password">Reset password</string>
