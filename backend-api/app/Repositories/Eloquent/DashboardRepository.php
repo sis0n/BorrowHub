@@ -35,7 +35,7 @@ class DashboardRepository implements DashboardRepositoryInterface
 
     public function getRecentTransactions(int $limit = 5)
     {
-        return BorrowRecord::with(['student', 'items'])
+        return BorrowRecord::with(['student.course', 'items'])
             ->orderBy('created_at', 'desc')
             ->take($limit)
             ->get();

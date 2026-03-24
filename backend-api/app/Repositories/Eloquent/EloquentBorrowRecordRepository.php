@@ -9,7 +9,7 @@ class EloquentBorrowRecordRepository implements BorrowRecordRepositoryInterface
 {
     public function getActiveRecords(array $filters = [])
     {
-        $query = BorrowRecord::with(['student', 'items', 'staff'])
+        $query = BorrowRecord::with(['student.course', 'items', 'staff'])
             ->where('status', 'borrowed');
 // Filter by Student Number
 if (isset($filters['student_number'])) {

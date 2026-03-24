@@ -81,7 +81,7 @@ class TransactionService
                 'transaction'
             );
 
-            return $borrowRecord->load(['student', 'items', 'staff']);
+            return $borrowRecord->load(['student.course', 'items', 'staff']);
         });
     }
 
@@ -114,7 +114,7 @@ class TransactionService
                 'transaction'
             );
 
-            return $record->load(['student', 'items', 'staff']);
+            return $record->load(['student.course', 'items', 'staff']);
         });
     }
 }
