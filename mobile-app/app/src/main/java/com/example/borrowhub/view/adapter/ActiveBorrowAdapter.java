@@ -100,7 +100,7 @@ public class ActiveBorrowAdapter extends RecyclerView.Adapter<ActiveBorrowAdapte
 
             tvBorrowTimestamp.setText(itemView.getContext().getString(
                     R.string.return_timestamp_format,
-                    borrow.borrowDate, borrow.borrowTime));
+                    borrow.formattedDateTime));
 
             itemView.setOnClickListener(v -> {
                 if (listener != null) {

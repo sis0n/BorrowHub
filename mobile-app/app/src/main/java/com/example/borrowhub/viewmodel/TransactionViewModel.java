@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class TransactionViewModel extends AndroidViewModel {
 
@@ -43,23 +44,20 @@ public class TransactionViewModel extends AndroidViewModel {
         public final String course;
         public final String collateral;
         public final List<String> items;
-        public final String borrowDate;
-        public final String borrowTime;
+        public final String formattedDateTime;
 
         public ActiveBorrow(long id, String studentNumber, String studentName,
                             String course, String collateral, List<String> items,
-                            String borrowDate, String borrowTime) {
+                            String formattedDateTime) {
             this.id = id;
             this.studentNumber = studentNumber;
             this.studentName = studentName;
             this.course = course;
             this.collateral = collateral;
             this.items = items;
-            this.borrowDate = borrowDate;
-            this.borrowTime = borrowTime;
+            this.formattedDateTime = formattedDateTime;
         }
     }
-
     /** Model for dynamic item rows in the Borrow form. */
     public static class ItemRow {
         public String type;
@@ -386,16 +384,34 @@ public class TransactionViewModel extends AndroidViewModel {
         }
 
         // Format date from backend (e.g., 2026-03-10T12:00:00Z)
-        String borrowDate = dto.getBorrowedAt();
-        String borrowTime = "";
+        String rawBorrowedAt = dto.getBorrowedAt();
+        String formattedDateTime = rawBorrowedAt;
         try {
-            // Simple display formatting - in a real app use a proper parser
-            if (borrowDate != null && borrowDate.contains("T")) {
-                String[] parts = borrowDate.split("T");
-                borrowDate = parts[0];
-                borrowTime = parts[1].substring(0, 5);
+            // ISO 8601 parser (UTC from backend)
+            SimpleDateFormat isoParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.US);
+            isoParser.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+            // Output format: Mar 25, 2026, 11:30PM
+            SimpleDateFormat phFormatter = new SimpleDateFormat("MMM d, yyyy, hh:mma", Locale.US);
+            phFormatter.setTimeZone(TimeZone.getTimeZone("Asia/Manila"));
+
+            Date date = isoParser.parse(rawBorrowedAt);
+            if (date != null) {
+                formattedDateTime = phFormatter.format(date);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            // Fallback for different ISO variations
+            try {
+                SimpleDateFormat isoParserShort = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+                isoParserShort.setTimeZone(TimeZone.getTimeZone("UTC"));
+                Date date = isoParserShort.parse(rawBorrowedAt);
+                if (date != null) {
+                    SimpleDateFormat phFormatter = new SimpleDateFormat("MMM d, yyyy, hh:mma", Locale.US);
+                    phFormatter.setTimeZone(TimeZone.getTimeZone("Asia/Manila"));
+                    formattedDateTime = phFormatter.format(date);
+                }
+            } catch (Exception ignored) {}
+        }
 
         return new ActiveBorrow(
                 dto.getId(),
@@ -404,8 +420,7 @@ public class TransactionViewModel extends AndroidViewModel {
                 course,
                 dto.getCollateral(),
                 itemNames,
-                borrowDate,
-                borrowTime
+                formattedDateTime
         );
     }
 }

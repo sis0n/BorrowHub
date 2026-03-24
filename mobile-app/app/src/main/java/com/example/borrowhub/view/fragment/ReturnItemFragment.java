@@ -116,7 +116,7 @@ public class ReturnItemFragment extends Fragment implements ActiveBorrowAdapter.
         // Time info
         bindText(dialogView, R.id.tvDialogBorrowDateTime,
                 getString(R.string.return_dialog_borrow_datetime_format,
-                        borrow.borrowDate, borrow.borrowTime));
+                        borrow.formattedDateTime));
 
         // Collateral reminder
         TextView tvReminder = dialogView.findViewById(R.id.tvCollateralReminder);

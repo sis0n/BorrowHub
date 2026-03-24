@@ -33,8 +33,8 @@
     <string name="dashboard_recent_transactions">Recent Transactions</string>
     <string name="dashboard_view_all">View All</string>
 
-    <string name="inventory_title">Inventory Management</string>
-    <string name="inventory_subtitle">Manage and track all resources</string>
+    <string name="inventory_title">Inventory</string>
+    <string name="inventory_subtitle">Manage all borrowable resources</string>
     <string name="inventory_search_hint">Search by item name...</string>
     <string name="inventory_empty_state">No items found matching your criteria.</string>
     <string name="inventory_field_item_name">Item Name</string>
@@ -177,7 +177,7 @@
     <string name="return_search_hint">Search by student name, number, or item…</string>
     <string name="return_empty_state">No active borrows match your search.</string>
     <string name="return_borrowed_label">Borrowed</string>
-    <string name="return_timestamp_format">Borrowed: %1$s at %2$s</string>
+    <string name="return_timestamp_format">Borrowed: %1$s</string>
     <string name="return_item_bullet_format">• %1$s</string>
 
     <string name="return_dialog_title">Return Verification</string>
@@ -189,7 +189,7 @@
     <string name="return_dialog_label_course">Course</string>
     <string name="return_dialog_label_collateral">Collateral</string>
     <string name="return_dialog_label_borrow_date">Borrow Date &amp; Time</string>
-    <string name="return_dialog_borrow_datetime_format">%1$s at %2$s</string>
+    <string name="return_dialog_borrow_datetime_format">%1$s</string>
     <string name="return_dialog_collateral_reminder">Verify ALL items and return the %1$s before confirming.</string>
     <string name="return_dialog_action_process">Process Return</string>
     <string name="return_dialog_action_cancel">Cancel</string>
