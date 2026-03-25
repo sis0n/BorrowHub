@@ -17,19 +17,23 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Header: Action Tag and Timestamp -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp">
+            android:layout_marginBottom="12dp">
 
             <TextView
-                android:id="@+id/tvLogId"
+                android:id="@+id/tvLogAction"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
-                android:text="1001"
+                android:background="@drawable/bg_status_badge"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:text="Action"
                 android:textColor="?attr/colorOnSurface"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -37,52 +41,52 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
                 android:text="Mar 20, 2026 09:15 AM"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="12sp"
                 android:textStyle="bold" />
         </RelativeLayout>
 
-        <LinearLayout
+        <!-- Primary Text (Bold for Transactions) -->
+        <TextView
+            android:id="@+id/tvLogPrimary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:text="Primary Text"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="14sp" />
 
-            <TextView
-                android:id="@+id/tvLogAction"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/bg_status_badge"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="4dp"
-                android:text="Borrowed"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvLogActor"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="Sarah Chen"
-                android:textColor="?attr/colorOnSurface"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
+        <!-- Secondary Text (Borrower/Target) -->
         <TextView
-            android:id="@+id/tvLogDetails"
+            android:id="@+id/tvLogSecondary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Secondary Text"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="13sp" />
+
+        <!-- Tertiary Text (Performed By) -->
+        <TextView
+            android:id="@+id/tvLogTertiary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Tertiary Text"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="13sp" />
+
+        <!-- Quaternary Text (Description for Activity Logs) -->
+        <TextView
+            android:id="@+id/tvLogQuaternary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Borrowed Projector - Epson EB-X41"
+            android:text="Quaternary Text"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="13sp" />
+
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

@@ -1,5 +1,6 @@
 package com.example.borrowhub.view.adapter;
 
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.borrowhub.R;
+import com.example.borrowhub.utils.DateUtils;
 import com.example.borrowhub.viewmodel.LogsViewModel;
 
 import java.util.ArrayList;
@@ -42,41 +44,71 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.LogViewHolder> {
     }
 
     static class LogViewHolder extends RecyclerView.ViewHolder {
-        private final TextView tvLogId;
-        private final TextView tvLogTimestamp;
         private final TextView tvLogAction;
-        private final TextView tvLogActor;
-        private final TextView tvLogDetails;
+        private final TextView tvLogTimestamp;
+        private final TextView tvLogPrimary;
+        private final TextView tvLogSecondary;
+        private final TextView tvLogTertiary;
+        private final TextView tvLogQuaternary;
 
         LogViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvLogId = itemView.findViewById(R.id.tvLogId);
-            tvLogTimestamp = itemView.findViewById(R.id.tvLogTimestamp);
             tvLogAction = itemView.findViewById(R.id.tvLogAction);
-            tvLogActor = itemView.findViewById(R.id.tvLogActor);
-            tvLogDetails = itemView.findViewById(R.id.tvLogDetails);
+            tvLogTimestamp = itemView.findViewById(R.id.tvLogTimestamp);
+            tvLogPrimary = itemView.findViewById(R.id.tvLogPrimary);
+            tvLogSecondary = itemView.findViewById(R.id.tvLogSecondary);
+            tvLogTertiary = itemView.findViewById(R.id.tvLogTertiary);
+            tvLogQuaternary = itemView.findViewById(R.id.tvLogQuaternary);
         }
 
         void bind(LogsViewModel.LogEntry entry) {
-            tvLogId.setText(String.valueOf(entry.id));
-            tvLogTimestamp.setText(entry.timestamp);
+            tvLogTimestamp.setText(DateUtils.formatBackendDate(entry.timestamp));
             tvLogAction.setText(entry.action);
-            tvLogActor.setText(entry.actor);
-            tvLogDetails.setText(entry.details);
 
+            if (LogsViewModel.TYPE_TRANSACTION.equals(entry.type)) {
+                // Transaction Logs Layout
+                tvLogPrimary.setText(entry.details);
+                tvLogPrimary.setTypeface(null, Typeface.BOLD);
+                tvLogPrimary.setVisibility(View.VISIBLE);
+
+                String actionLabel = entry.action.contains("Returned") ? "Returned by: " : "Borrowed by: ";
+                tvLogSecondary.setText(actionLabel + entry.target);
+                tvLogSecondary.setTypeface(null, Typeface.NORMAL);
+                tvLogSecondary.setVisibility(View.VISIBLE);
+
+                tvLogTertiary.setText("Performed by: " + entry.actor);
+                tvLogTertiary.setVisibility(View.VISIBLE);
+
+                tvLogQuaternary.setVisibility(View.GONE);
+            } else {
+                // Activity Logs Layout
+                tvLogPrimary.setVisibility(View.GONE);
+
+                tvLogSecondary.setText("Target: " + entry.target);
+                tvLogSecondary.setTypeface(null, Typeface.NORMAL);
+                tvLogSecondary.setVisibility(View.VISIBLE);
+
+                tvLogTertiary.setText("By: " + entry.actor);
+                tvLogTertiary.setVisibility(View.VISIBLE);
+
+                tvLogQuaternary.setText(entry.details);
+                tvLogQuaternary.setVisibility(View.VISIBLE);
+            }
+
+            // Status Colors
             int textColorRes;
             int bgColorRes;
 
-            if ("Borrowed".equalsIgnoreCase(entry.action)) {
+            if (entry.action.contains("Borrowed")) {
                 textColorRes = R.color.inventory_status_borrowed_text;
                 bgColorRes = R.color.inventory_status_borrowed_bg;
-            } else if ("Returned".equalsIgnoreCase(entry.action)) {
+            } else if (entry.action.contains("Returned")) {
                 textColorRes = R.color.inventory_status_available_text;
                 bgColorRes = R.color.inventory_status_available_bg;
-            } else if ("Added".equalsIgnoreCase(entry.action)) {
+            } else if (entry.action.contains("Added")) {
                 textColorRes = R.color.student_course_badge_text;
                 bgColorRes = R.color.student_course_badge_bg;
-            } else if ("Deleted".equalsIgnoreCase(entry.action)) {
+            } else if (entry.action.contains("Deleted")) {
                 textColorRes = R.color.inventory_status_maintenance_text;
                 bgColorRes = R.color.inventory_status_maintenance_bg;
             } else {

@@ -21,6 +21,7 @@ import com.example.borrowhub.data.remote.api.ApiService;
 import com.example.borrowhub.data.remote.dto.ActivityLogDTO;
 import com.example.borrowhub.data.remote.dto.ApiResponseDTO;
 import com.example.borrowhub.data.remote.dto.TransactionLogDTO;
+import com.example.borrowhub.data.remote.dto.PaginatedResponseDTO;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -58,10 +59,10 @@ public class LogRepositoryTest {
     private SessionManager sessionManager;
 
     @Mock
-    private Call<ApiResponseDTO<List<ActivityLogDTO>>> activityCall;
+    private Call<ApiResponseDTO<PaginatedResponseDTO<ActivityLogDTO>>> activityCall;
 
     @Mock
-    private Call<ApiResponseDTO<List<TransactionLogDTO>>> transactionCall;
+    private Call<ApiResponseDTO<PaginatedResponseDTO<TransactionLogDTO>>> transactionCall;
 
     private LogRepository repository;
 
@@ -73,16 +74,16 @@ public class LogRepositoryTest {
 
     @Test
     public void getActivityLogs_withAction_filterUsesDaoAndCachesResponse() {
-        String json = "{\"status\":\"success\",\"message\":\"ok\",\"data\":[{\"id\":1,\"performed_by\":\"Staff (Maria)\",\"target_user_id\":\"STU123\",\"target_user_name\":\"Lisa\",\"action\":\"Added\",\"details\":\"New item\",\"created_at\":\"2026-03-20T10:00:00Z\"}]}";
-        Type responseType = new TypeToken<ApiResponseDTO<List<ActivityLogDTO>>>() {}.getType();
-        ApiResponseDTO<List<ActivityLogDTO>> apiResponse = new Gson().fromJson(json, responseType);
+        String json = "{\"status\":\"success\",\"message\":\"ok\",\"data\":{\"current_page\":1,\"data\":[{\"id\":1,\"performed_by\":\"Staff (Maria)\",\"target_user_id\":\"STU123\",\"target_user_name\":\"Lisa\",\"action\":\"Added\",\"details\":\"New item\",\"created_at\":\"2026-03-20T10:00:00Z\"}],\"last_page\":1,\"total\":1}}";
+        Type responseType = new TypeToken<ApiResponseDTO<PaginatedResponseDTO<ActivityLogDTO>>>() {}.getType();
+        ApiResponseDTO<PaginatedResponseDTO<ActivityLogDTO>> apiResponse = new Gson().fromJson(json, responseType);
 
         MutableLiveData<List<ActivityLogEntity>> cachedLiveData = new MutableLiveData<>();
         when(activityLogDao.getLogsByAction("Added")).thenReturn(cachedLiveData);
         when(apiService.getActivityLogs(anyString(), anyString(), any(), any())).thenReturn(activityCall);
 
         doAnswer(invocation -> {
-            Callback<ApiResponseDTO<List<ActivityLogDTO>>> callback = invocation.getArgument(0);
+            Callback<ApiResponseDTO<PaginatedResponseDTO<ActivityLogDTO>>> callback = invocation.getArgument(0);
             callback.onResponse(activityCall, Response.success(apiResponse));
             return null;
         }).when(activityCall).enqueue(any(Callback.class));
@@ -104,16 +105,16 @@ public class LogRepositoryTest {
 
     @Test
     public void getTransactionLogs_noFilters_usesAllLogsDaoAndCachesResponse() {
-        String json = "{\"status\":\"success\",\"message\":\"ok\",\"data\":[{\"id\":11,\"performed_by\":\"Staff (Ana)\",\"target_user_id\":\"EMP123\",\"target_user_name\":\"James\",\"action\":\"Borrowed\",\"details\":\"Laptop\",\"created_at\":\"2026-03-20T12:00:00Z\"}]}";
-        Type responseType = new TypeToken<ApiResponseDTO<List<TransactionLogDTO>>>() {}.getType();
-        ApiResponseDTO<List<TransactionLogDTO>> apiResponse = new Gson().fromJson(json, responseType);
+        String json = "{\"status\":\"success\",\"message\":\"ok\",\"data\":{\"current_page\":1,\"data\":[{\"id\":11,\"performed_by\":\"Staff (Ana)\",\"target_user_id\":\"EMP123\",\"target_user_name\":\"James\",\"action\":\"Borrowed\",\"details\":\"Laptop\",\"created_at\":\"2026-03-20T12:00:00Z\"}],\"last_page\":1,\"total\":1}}";
+        Type responseType = new TypeToken<ApiResponseDTO<PaginatedResponseDTO<TransactionLogDTO>>>() {}.getType();
+        ApiResponseDTO<PaginatedResponseDTO<TransactionLogDTO>> apiResponse = new Gson().fromJson(json, responseType);
 
         MutableLiveData<List<TransactionLogEntity>> cachedLiveData = new MutableLiveData<>();
         when(transactionLogDao.getAllLogs()).thenReturn(cachedLiveData);
         when(apiService.getTransactionLogs(anyString(), any(), any(), any())).thenReturn(transactionCall);
 
         doAnswer(invocation -> {
-            Callback<ApiResponseDTO<List<TransactionLogDTO>>> callback = invocation.getArgument(0);
+            Callback<ApiResponseDTO<PaginatedResponseDTO<TransactionLogDTO>>> callback = invocation.getArgument(0);
             callback.onResponse(transactionCall, Response.success(apiResponse));
             return null;
         }).when(transactionCall).enqueue(any(Callback.class));
@@ -134,21 +135,21 @@ public class LogRepositoryTest {
 
     @Test
     public void apiResponseParsing_activityAndTransactionDtos_mapFields() {
-        String activityJson = "{\"status\":\"success\",\"message\":\"ok\",\"data\":[{\"id\":2,\"performed_by\":\"Admin (John)\",\"target_user_id\":\"SYSTEM\",\"target_user_name\":\"Admin\",\"action\":\"Updated\",\"details\":\"Status change\",\"created_at\":\"2026-03-20T13:00:00Z\"}]}";
-        String transactionJson = "{\"status\":\"success\",\"message\":\"ok\",\"data\":[{\"id\":3,\"performed_by\":\"Staff (Maria)\",\"target_user_id\":\"STU300\",\"target_user_name\":\"Alice\",\"action\":\"Returned\",\"details\":\"Projector\",\"created_at\":\"2026-03-20T14:00:00Z\"}]}";
+        String activityJson = "{\"status\":\"success\",\"message\":\"ok\",\"data\":{\"current_page\":1,\"data\":[{\"id\":2,\"performed_by\":\"Admin (John)\",\"target_user_id\":\"SYSTEM\",\"target_user_name\":\"Admin\",\"action\":\"Updated\",\"details\":\"Status change\",\"created_at\":\"2026-03-20T13:00:00Z\"}]}}";
+        String transactionJson = "{\"status\":\"success\",\"message\":\"ok\",\"data\":{\"current_page\":1,\"data\":[{\"id\":3,\"performed_by\":\"Staff (Maria)\",\"target_user_id\":\"STU300\",\"target_user_name\":\"Alice\",\"action\":\"Returned\",\"details\":\"Projector\",\"created_at\":\"2026-03-20T14:00:00Z\"}]}}";
 
-        Type activityType = new TypeToken<ApiResponseDTO<List<ActivityLogDTO>>>() {}.getType();
-        Type transactionType = new TypeToken<ApiResponseDTO<List<TransactionLogDTO>>>() {}.getType();
+        Type activityType = new TypeToken<ApiResponseDTO<PaginatedResponseDTO<ActivityLogDTO>>>() {}.getType();
+        Type transactionType = new TypeToken<ApiResponseDTO<PaginatedResponseDTO<TransactionLogDTO>>>() {}.getType();
 
-        ApiResponseDTO<List<ActivityLogDTO>> activityResponse = new Gson().fromJson(activityJson, activityType);
-        ApiResponseDTO<List<TransactionLogDTO>> transactionResponse = new Gson().fromJson(transactionJson, transactionType);
+        ApiResponseDTO<PaginatedResponseDTO<ActivityLogDTO>> activityResponse = new Gson().fromJson(activityJson, activityType);
+        ApiResponseDTO<PaginatedResponseDTO<TransactionLogDTO>> transactionResponse = new Gson().fromJson(transactionJson, transactionType);
 
         assertEquals(true, activityResponse.isSuccess());
-        assertEquals("Admin (John)", activityResponse.getData().get(0).getPerformedBy());
-        assertEquals("SYSTEM", activityResponse.getData().get(0).getTargetUserId());
+        assertEquals("Admin (John)", activityResponse.getData().getData().get(0).getPerformedBy());
+        assertEquals("SYSTEM", activityResponse.getData().getData().get(0).getTargetUserId());
 
         assertEquals(true, transactionResponse.isSuccess());
-        assertEquals("Staff (Maria)", transactionResponse.getData().get(0).getPerformedBy());
-        assertEquals("Returned", transactionResponse.getData().get(0).getAction());
+        assertEquals("Staff (Maria)", transactionResponse.getData().getData().get(0).getPerformedBy());
+        assertEquals("Returned", transactionResponse.getData().getData().get(0).getAction());
     }
 }

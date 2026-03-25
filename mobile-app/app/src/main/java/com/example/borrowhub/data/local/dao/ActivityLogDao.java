@@ -18,7 +18,7 @@ public interface ActivityLogDao {
     @Query("SELECT * FROM activity_logs ORDER BY created_at DESC")
     LiveData<List<ActivityLogEntity>> getAllLogs();
 
-    @Query("SELECT * FROM activity_logs WHERE action = :action ORDER BY created_at DESC")
+    @Query("SELECT * FROM activity_logs WHERE action LIKE '%' || :action || '%' ORDER BY created_at DESC")
     LiveData<List<ActivityLogEntity>> getLogsByAction(String action);
 
     @Query("SELECT * FROM activity_logs WHERE target_user_id LIKE '%' || :targetUserId || '%' ORDER BY created_at DESC")

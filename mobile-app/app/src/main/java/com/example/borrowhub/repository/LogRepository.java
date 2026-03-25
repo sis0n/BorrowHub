@@ -15,6 +15,7 @@ import com.example.borrowhub.data.remote.api.ApiService;
 import com.example.borrowhub.data.remote.dto.ActivityLogDTO;
 import com.example.borrowhub.data.remote.dto.ApiResponseDTO;
 import com.example.borrowhub.data.remote.dto.TransactionLogDTO;
+import com.example.borrowhub.data.remote.dto.PaginatedResponseDTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,15 +86,15 @@ public class LogRepository {
         String token = "Bearer " + sessionManager.getAuthToken();
 
         apiService.getActivityLogs(token, action, targetUserId, performedBy)
-                .enqueue(new Callback<ApiResponseDTO<List<ActivityLogDTO>>>() {
+                .enqueue(new Callback<ApiResponseDTO<PaginatedResponseDTO<ActivityLogDTO>>>() {
                     @Override
-                    public void onResponse(Call<ApiResponseDTO<List<ActivityLogDTO>>> call,
-                                           Response<ApiResponseDTO<List<ActivityLogDTO>>> response) {
+                    public void onResponse(Call<ApiResponseDTO<PaginatedResponseDTO<ActivityLogDTO>>> call,
+                                           Response<ApiResponseDTO<PaginatedResponseDTO<ActivityLogDTO>>> response) {
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            List<ActivityLogDTO> logDTOs = response.body().getData();
+                            PaginatedResponseDTO<ActivityLogDTO> paginatedData = response.body().getData();
                             List<ActivityLogEntity> entities = new ArrayList<>();
-                            if (logDTOs != null) {
-                                for (ActivityLogDTO dto : logDTOs) {
+                            if (paginatedData != null && paginatedData.getData() != null) {
+                                for (ActivityLogDTO dto : paginatedData.getData()) {
                                     entities.add(convertActivityDtoToEntity(dto));
                                 }
                             }
@@ -108,7 +109,7 @@ public class LogRepository {
                     }
 
                     @Override
-                    public void onFailure(Call<ApiResponseDTO<List<ActivityLogDTO>>> call, Throwable t) {
+                    public void onFailure(Call<ApiResponseDTO<PaginatedResponseDTO<ActivityLogDTO>>> call, Throwable t) {
                         Log.e(TAG, "Error syncing activity logs from API", t);
                     }
                 });
@@ -118,15 +119,15 @@ public class LogRepository {
         String token = "Bearer " + sessionManager.getAuthToken();
 
         apiService.getTransactionLogs(token, action, targetUserId, performedBy)
-                .enqueue(new Callback<ApiResponseDTO<List<TransactionLogDTO>>>() {
+                .enqueue(new Callback<ApiResponseDTO<PaginatedResponseDTO<TransactionLogDTO>>>() {
                     @Override
-                    public void onResponse(Call<ApiResponseDTO<List<TransactionLogDTO>>> call,
-                                           Response<ApiResponseDTO<List<TransactionLogDTO>>> response) {
+                    public void onResponse(Call<ApiResponseDTO<PaginatedResponseDTO<TransactionLogDTO>>> call,
+                                           Response<ApiResponseDTO<PaginatedResponseDTO<TransactionLogDTO>>> response) {
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                            List<TransactionLogDTO> logDTOs = response.body().getData();
+                            PaginatedResponseDTO<TransactionLogDTO> paginatedData = response.body().getData();
                             List<TransactionLogEntity> entities = new ArrayList<>();
-                            if (logDTOs != null) {
-                                for (TransactionLogDTO dto : logDTOs) {
+                            if (paginatedData != null && paginatedData.getData() != null) {
+                                for (TransactionLogDTO dto : paginatedData.getData()) {
                                     entities.add(convertTransactionDtoToEntity(dto));
                                 }
                             }
@@ -141,7 +142,7 @@ public class LogRepository {
                     }
 
                     @Override
-                    public void onFailure(Call<ApiResponseDTO<List<TransactionLogDTO>>> call, Throwable t) {
+                    public void onFailure(Call<ApiResponseDTO<PaginatedResponseDTO<TransactionLogDTO>>> call, Throwable t) {
                         Log.e(TAG, "Error syncing transaction logs from API", t);
                     }
                 });

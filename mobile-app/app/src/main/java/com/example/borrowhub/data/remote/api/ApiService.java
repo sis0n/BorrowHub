@@ -38,6 +38,7 @@ import retrofit2.http.Header;
 import retrofit2.http.Path;
 import com.example.borrowhub.data.remote.dto.ActivityLogDTO;
 import com.example.borrowhub.data.remote.dto.TransactionLogDTO;
+import com.example.borrowhub.data.remote.dto.PaginatedResponseDTO;
 
 /**
  * Interface defining the API endpoints for the BorrowHub backend.
@@ -139,7 +140,7 @@ public interface ApiService {
 
     // System Logs
     @GET("api/v1/activity-logs")
-    Call<ApiResponseDTO<List<ActivityLogDTO>>> getActivityLogs(
+    Call<ApiResponseDTO<PaginatedResponseDTO<ActivityLogDTO>>> getActivityLogs(
             @Header("Authorization") String token,
             @Query("action") String action,
             @Query("target_user_id") String targetUserId,
@@ -147,7 +148,7 @@ public interface ApiService {
     );
 
     @GET("api/v1/transaction-logs")
-    Call<ApiResponseDTO<List<TransactionLogDTO>>> getTransactionLogs(
+    Call<ApiResponseDTO<PaginatedResponseDTO<TransactionLogDTO>>> getTransactionLogs(
             @Header("Authorization") String token,
             @Query("action") String action,
             @Query("target_user_id") String targetUserId,
