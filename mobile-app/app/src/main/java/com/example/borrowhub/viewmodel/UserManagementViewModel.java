@@ -17,7 +17,7 @@ import java.util.Locale;
 
 public class UserManagementViewModel extends AndroidViewModel {
 
-    public static final String DEFAULT_PASSWORD = "123";
+    public static final String DEFAULT_PASSWORD = "borrowhub123";
     public static final String PROTECTED_ADMIN_USERNAME = "admin";
 
     private final UserRepository repository;
@@ -72,16 +72,27 @@ public class UserManagementViewModel extends AndroidViewModel {
     }
 
     public void addUser(String name, String username, String role) {
-        observeResult(repository.createUser(name.trim(), username.trim(), role.trim(), DEFAULT_PASSWORD),
+        clearOperationStates();
+        observeResult(repository.createUser(safeTrim(name), safeTrim(username), safeTrim(role), DEFAULT_PASSWORD),
                 "Failed to create user");
     }
 
     public void updateUser(User existingUser, String name, String username, String role) {
-        observeResult(repository.updateUser(existingUser.getId(), name.trim(), username.trim(), role.trim()),
+        clearOperationStates();
+        if (existingUser == null) {
+            operationError.setValue("Failed to update user");
+            return;
+        }
+        observeResult(repository.updateUser(existingUser.getId(), safeTrim(name), safeTrim(username), safeTrim(role)),
                 "Failed to update user");
     }
 
     public void deleteUser(User user) {
+        clearOperationStates();
+        if (user == null) {
+            operationError.setValue("Failed to delete user");
+            return;
+        }
         if (isProtectedAdmin(user)) {
             operationError.setValue("Cannot delete the admin user");
             return;
@@ -90,6 +101,11 @@ public class UserManagementViewModel extends AndroidViewModel {
     }
 
     public void resetPasswordToDefault(User user) {
+        clearOperationStates();
+        if (user == null) {
+            operationError.setValue("Failed to reset password");
+            return;
+        }
         observeResult(repository.resetPassword(user.getId(), DEFAULT_PASSWORD, DEFAULT_PASSWORD),
                 "Failed to reset password");
     }
@@ -106,11 +122,13 @@ public class UserManagementViewModel extends AndroidViewModel {
             public void onChanged(UserRepository.Result<T> result) {
                 liveData.removeObserver(this);
                 if (result != null && result.isSuccess()) {
+                    operationError.setValue(null);
                     operationSuccess.setValue(true);
                 } else {
                     String error = (result == null || result.getError() == null || result.getError().trim().isEmpty())
                             ? defaultError
                             : result.getError();
+                    operationSuccess.setValue(null);
                     operationError.setValue(error);
                 }
             }
@@ -120,6 +138,10 @@ public class UserManagementViewModel extends AndroidViewModel {
 
     private void observeUsers() {
         usersLiveData.observeForever(usersObserver);
+    }
+
+    private String safeTrim(String value) {
+        return value == null ? "" : value.trim();
     }
 
     private void applyFilters() {
