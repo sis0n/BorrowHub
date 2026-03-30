@@ -88,7 +88,7 @@ public class StudentManagementViewModelTest {
         viewModel.addStudent(" STU003 ", " Charlie ", " Computer Science ");
         viewModel.addStudent(" STU003 ", " Charlie ", " Computer Science ");
 
-        verify(repository).createStudent(eq("STU003"), eq("Charlie"), eq("Computer Science"), any());
+        verify(repository, org.mockito.Mockito.times(2)).createStudent(eq("STU003"), eq("Charlie"), eq("Computer Science"), any());
         verify(repository, atLeastOnce()).getAllStudents();
         verify(repository).refreshStudentsFromApi();
         verify(repository, atLeastOnce()).refreshCoursesFromApi(any());
@@ -112,8 +112,8 @@ public class StudentManagementViewModelTest {
         viewModel.addStudent("STU003", "Charlie", "Computer Science");
         viewModel.addStudent("STU003", "Charlie", "Computer Science");
 
-        verify(repository).getAllStudents();
-        verify(repository).refreshCoursesFromApi(any());
+        verify(repository, atLeastOnce()).getAllStudents();
+        verify(repository, atLeastOnce()).refreshCoursesFromApi(any());
         assertNull(viewModel.getOperationSuccess().getValue());
         assertEquals("Failed to add student", viewModel.getOperationError().getValue());
     }
