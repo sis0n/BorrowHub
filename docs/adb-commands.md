@@ -30,6 +30,11 @@ Filter by a specific tag (e.g., `BorrowHub`):
 adb logcat -s BorrowHub
 ```
 
+Filter for network logs (OkHttp):
+```bash
+adb logcat *:S OkHttp:D -v color
+```
+
 Clear the logcat buffer:
 ```bash
 adb logcat -c

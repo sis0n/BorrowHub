@@ -96,6 +96,9 @@
     <string name="student_update_processing">Updating student…</string>
     <string name="student_delete_processing">Deleting student…</string>
     <string name="student_import_processing">Importing students…</string>
+    <string name="student_import_pick_file">Pick CSV File</string>
+    <string name="student_import_error_read_file">Failed to read the selected file</string>
+    <string name="student_import_invalid_file">Please select a valid CSV or TXT file</string>
 
     <!-- User Management -->
     <string name="user_title">User Management</string>

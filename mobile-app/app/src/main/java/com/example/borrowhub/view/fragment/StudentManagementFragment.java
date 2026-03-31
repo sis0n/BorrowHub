@@ -1,5 +1,6 @@
 package com.example.borrowhub.view.fragment;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -8,8 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -25,6 +29,9 @@ import com.example.borrowhub.viewmodel.StudentManagementViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +41,17 @@ public class StudentManagementFragment extends Fragment implements StudentAdapte
     private StudentManagementViewModel viewModel;
     private StudentAdapter studentAdapter;
     private List<String> availableCourses = new ArrayList<>();
+    private TextInputEditText etCsvData;
+    private ProgressBar pbFileLoading;
+
+    private final ActivityResultLauncher<String> filePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
+            uri -> {
+                if (uri != null) {
+                    readCsvFile(uri);
+                }
+            }
+    );
 
     @Nullable
     @Override
@@ -203,7 +221,11 @@ public class StudentManagementFragment extends Fragment implements StudentAdapte
         View dialogView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_student_import, null);
 
-        TextInputEditText etCsvData = dialogView.findViewById(R.id.etCsvData);
+        etCsvData = dialogView.findViewById(R.id.etCsvData);
+        pbFileLoading = dialogView.findViewById(R.id.pbFileLoading);
+        View btnPickFile = dialogView.findViewById(R.id.btnPickFile);
+
+        btnPickFile.setOnClickListener(v -> filePickerLauncher.launch("text/*"));
 
         AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.student_import_title)
@@ -225,6 +247,42 @@ public class StudentManagementFragment extends Fragment implements StudentAdapte
         }));
 
         dialog.show();
+    }
+
+    private void readCsvFile(Uri uri) {
+        if (pbFileLoading != null) pbFileLoading.setVisibility(View.VISIBLE);
+        if (etCsvData != null) etCsvData.setEnabled(false);
+
+        new Thread(() -> {
+            StringBuilder content = new StringBuilder();
+            boolean success = false;
+            try (InputStream is = requireContext().getContentResolver().openInputStream(uri);
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+                
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    content.append(line).append("\n");
+                }
+                success = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            final boolean finalSuccess = success;
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    if (pbFileLoading != null) pbFileLoading.setVisibility(View.GONE);
+                    if (etCsvData != null) {
+                        etCsvData.setEnabled(true);
+                        if (finalSuccess) {
+                            etCsvData.setText(content.toString());
+                        } else {
+                            Toast.makeText(requireContext(), R.string.student_import_error_read_file, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            }
+        }).start();
     }
 
     private String asString(CharSequence value) {

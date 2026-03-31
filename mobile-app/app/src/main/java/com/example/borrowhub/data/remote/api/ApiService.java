@@ -37,6 +37,9 @@ import retrofit2.http.PATCH;
 import retrofit2.http.DELETE;
 import retrofit2.http.Header;
 import retrofit2.http.Path;
+import retrofit2.http.Multipart;
+import retrofit2.http.Part;
+import okhttp3.MultipartBody;
 import com.example.borrowhub.data.remote.dto.ActivityLogDTO;
 import com.example.borrowhub.data.remote.dto.TransactionLogDTO;
 import com.example.borrowhub.data.remote.dto.PaginatedResponseDTO;
@@ -126,8 +129,12 @@ public interface ApiService {
     @DELETE("api/v1/students/{id}")
     Call<ApiResponseDTO<Void>> deleteStudent(@Header("Authorization") String token, @Path("id") long studentId);
 
+    @Multipart
     @POST("api/v1/students/import")
-    Call<ApiResponseDTO<Void>> importStudents(@Header("Authorization") String token, @Body ImportStudentsRequestDTO request);
+    Call<ApiResponseDTO<Void>> importStudents(
+            @Header("Authorization") String token,
+            @Part MultipartBody.Part file
+    );
 
     // Transaction Management
     @GET("api/v1/transactions/active")

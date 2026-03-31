@@ -17,7 +17,6 @@ import com.example.borrowhub.data.remote.dto.StudentDTO;
 import com.example.borrowhub.data.remote.dto.CourseDTO;
 import com.example.borrowhub.data.remote.dto.CreateStudentRequestDTO;
 import com.example.borrowhub.data.remote.dto.UpdateStudentRequestDTO;
-import com.example.borrowhub.data.remote.dto.ImportStudentsRequestDTO;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +31,9 @@ import java.util.Set;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.MediaType;
 
 /**
  * Repository for managing Student data.
@@ -106,10 +108,10 @@ public class StudentRepository {
     /**
      * Create a new student via API, then sync to local database.
      */
-    public void createStudent(String studentNumber, String name, String course,
+    public void createStudent(String studentNumber, String name, int courseId,
                               OperationCallback callback) {
         String token = getAuthHeader();
-        CreateStudentRequestDTO request = new CreateStudentRequestDTO(studentNumber, name, course);
+        CreateStudentRequestDTO request = new CreateStudentRequestDTO(studentNumber, name, courseId);
 
         apiService.createStudent(token, request).enqueue(new Callback<ApiResponseDTO<StudentDTO>>() {
             @Override
@@ -140,10 +142,10 @@ public class StudentRepository {
     /**
      * Update an existing student via API, then sync to local database.
      */
-    public void updateStudent(long studentId, String studentNumber, String name, String course,
+    public void updateStudent(long studentId, String studentNumber, String name, int courseId,
                               OperationCallback callback) {
         String token = getAuthHeader();
-        UpdateStudentRequestDTO request = new UpdateStudentRequestDTO(studentNumber, name, course);
+        UpdateStudentRequestDTO request = new UpdateStudentRequestDTO(studentNumber, name, courseId);
 
         apiService.updateStudent(token, studentId, request).enqueue(new Callback<ApiResponseDTO<StudentDTO>>() {
             @Override
@@ -169,6 +171,11 @@ public class StudentRepository {
                 if (callback != null) callback.onError(t.getMessage());
             }
         });
+    }
+
+    public int getCourseIdByNameSync(String name) {
+        CourseEntity course = courseDao.getCourseByNameSync(name);
+        return course != null ? course.getId() : -1;
     }
 
     /**
@@ -206,9 +213,27 @@ public class StudentRepository {
      */
     public void importStudents(List<CreateStudentRequestDTO> students, OperationCallback callback) {
         String token = getAuthHeader();
-        ImportStudentsRequestDTO request = new ImportStudentsRequestDTO(students);
 
-        apiService.importStudents(token, request).enqueue(new Callback<ApiResponseDTO<Void>>() {
+        // Build CSV string with header
+        StringBuilder csv = new StringBuilder("student_number,name,course_id\n");
+        for (CreateStudentRequestDTO s : students) {
+            csv.append(s.getStudentNumber()).append(",")
+               .append(s.getName()).append(",")
+               .append(s.getCourseId()).append("\n");
+        }
+
+        RequestBody requestFile = RequestBody.create(
+                MediaType.parse("text/csv"),
+                csv.toString()
+        );
+
+        MultipartBody.Part body = MultipartBody.Part.createFormData(
+                "file",
+                "students_import.csv",
+                requestFile
+        );
+
+        apiService.importStudents(token, body).enqueue(new Callback<ApiResponseDTO<Void>>() {
             @Override
             public void onResponse(Call<ApiResponseDTO<Void>> call,
                                    Response<ApiResponseDTO<Void>> response) {
@@ -261,6 +286,10 @@ public class StudentRepository {
                 if (callback != null) callback.onError(t.getMessage());
             }
         });
+    }
+
+    public void refreshStudentsFromApi() {
+        syncStudentsFromApi();
     }
 
     private void syncStudentsFromApi() {

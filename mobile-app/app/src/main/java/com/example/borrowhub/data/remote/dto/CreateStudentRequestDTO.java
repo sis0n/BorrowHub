@@ -10,15 +10,15 @@ public class CreateStudentRequestDTO {
     @SerializedName("name")
     private String name;
 
-    @SerializedName("course")
-    private String course;
+    @SerializedName("course_id")
+    private int courseId;
 
     public CreateStudentRequestDTO() {}
 
-    public CreateStudentRequestDTO(String studentNumber, String name, String course) {
+    public CreateStudentRequestDTO(String studentNumber, String name, int courseId) {
         this.studentNumber = studentNumber;
         this.name = name;
-        this.course = course;
+        this.courseId = courseId;
     }
 
     public String getStudentNumber() { return studentNumber; }
@@ -27,6 +27,6 @@ public class CreateStudentRequestDTO {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public String getCourse() { return course; }
-    public void setCourse(String course) { this.course = course; }
+    public int getCourseId() { return courseId; }
+    public void setCourseId(int courseId) { this.courseId = courseId; }
 }

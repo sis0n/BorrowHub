@@ -40,6 +40,9 @@ public interface CourseDao {
     @Query("SELECT * FROM student_courses WHERE id = :courseId")
     LiveData<CourseEntity> getCourseById(int courseId);
 
+    @Query("SELECT * FROM student_courses WHERE name = :name LIMIT 1")
+    CourseEntity getCourseByNameSync(String name);
+
     @Query("DELETE FROM student_courses")
     void deleteAll();
 
