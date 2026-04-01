@@ -1,5 +1,6 @@
 package com.example.borrowhub.view;
 
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -43,14 +44,17 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        // Apply the saved theme before super.onCreate() to prevent theme flicker on startup
         sessionManager = new SessionManager(this);
-        userRepository = new UserRepository(getApplication());
         applySavedThemeMode();
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        userRepository = new UserRepository(getApplication());
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -249,5 +253,17 @@ public class MainActivity extends AppCompatActivity {
 
         sessionManager.setThemeMode(nextMode);
         AppCompatDelegate.setDefaultNightMode(nextMode);
+    }
+
+    @Override
+    public void recreate() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out);
+            overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, android.R.anim.fade_in, android.R.anim.fade_out);
+            super.recreate();
+        } else {
+            super.recreate();
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        }
     }
 }

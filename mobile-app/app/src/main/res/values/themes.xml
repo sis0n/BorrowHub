@@ -13,6 +13,7 @@
         <item name="colorOnSurface">@color/gray_900</item>
         <item name="android:colorBackground">@color/white</item>
         <item name="colorOnBackground">@color/gray_900</item>
+        <item name="android:windowBackground">@color/white</item>
 
         <item name="colorOutlineVariant">@color/gray_200</item>
 
