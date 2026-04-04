@@ -6,8 +6,10 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.borrowhub.data.local.SessionManager;
 import com.example.borrowhub.databinding.ActivityLoginBinding;
 import com.example.borrowhub.viewmodel.AuthViewModel;
 
@@ -18,6 +20,14 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Apply the saved theme before super.onCreate() so the correct theme is used on cold start.
+        // setLocalNightMode first (direct delegate config, no recreation loop), then setDefaultNightMode
+        // to keep the process-wide default in sync.
+        SessionManager sessionManager = new SessionManager(this);
+        int savedMode = sessionManager.getThemeMode();
+        getDelegate().setLocalNightMode(savedMode);
+        AppCompatDelegate.setDefaultNightMode(savedMode);
+
         super.onCreate(savedInstanceState);
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
