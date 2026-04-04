@@ -231,7 +231,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void applySavedThemeMode() {
-        AppCompatDelegate.setDefaultNightMode(sessionManager.getThemeMode());
+        int savedMode = sessionManager.getThemeMode();
+        // setLocalNightMode configures THIS activity's AppCompatDelegate directly before
+        // super.onCreate() creates the window, so the correct theme is applied from the
+        // very first frame with no recreation loop.
+        // setDefaultNightMode is called second so the process-wide default stays in sync;
+        // by then the local mode is already set, so the global broadcast back to this
+        // delegate is a no-op and will NOT schedule a recreation.
+        getDelegate().setLocalNightMode(savedMode);
+        AppCompatDelegate.setDefaultNightMode(savedMode);
     }
 
     private void toggleThemeMode() {

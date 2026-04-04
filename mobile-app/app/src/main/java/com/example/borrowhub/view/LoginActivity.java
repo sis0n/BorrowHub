@@ -20,9 +20,13 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Apply the saved theme before super.onCreate() so the correct theme is used on cold start
+        // Apply the saved theme before super.onCreate() so the correct theme is used on cold start.
+        // setLocalNightMode first (direct delegate config, no recreation loop), then setDefaultNightMode
+        // to keep the process-wide default in sync.
         SessionManager sessionManager = new SessionManager(this);
-        AppCompatDelegate.setDefaultNightMode(sessionManager.getThemeMode());
+        int savedMode = sessionManager.getThemeMode();
+        getDelegate().setLocalNightMode(savedMode);
+        AppCompatDelegate.setDefaultNightMode(savedMode);
 
         super.onCreate(savedInstanceState);
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
