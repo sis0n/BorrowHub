@@ -24,15 +24,22 @@ import com.example.borrowhub.databinding.LayoutProfileDropdownBinding;
 import com.example.borrowhub.viewmodel.AuthViewModel;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 import android.view.ViewGroup;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.graphics.drawable.DrawableCompat;
+import com.google.android.material.color.MaterialColors;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String EXTRA_RESTORE_DESTINATION_ID = "extra_restore_destination_id";
+    private static final String TAG = "MainActivity";
 
     private ActivityMainBinding binding;
     private NavController navController;
@@ -68,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         if (navHostFragment != null) {
             navController = navHostFragment.getNavController();
+            restoreDestinationIfNeeded();
+
             //NavigationUI.setupWithNavController(binding.bottomNavigationView, navController);
             binding.bottomNavigationView.setOnItemSelectedListener(item -> {
                 NavOptions.Builder builder = new NavOptions.Builder()
@@ -120,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
             }
             return false;
         });
+        binding.topAppBar.post(this::updateProfileMenuIconTint);
     }
 
     private void showProfileDropdown(View anchor) {
@@ -242,6 +252,43 @@ public class MainActivity extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(savedMode);
     }
 
+    private void restoreDestinationIfNeeded() {
+        if (navController == null) return;
+        int targetDestinationId = getIntent().getIntExtra(EXTRA_RESTORE_DESTINATION_ID, -1);
+        if (targetDestinationId == -1) return;
+        if (navController.getCurrentDestination() != null
+                && navController.getCurrentDestination().getId() == targetDestinationId) {
+            return;
+        }
+        try {
+            navController.navigate(targetDestinationId);
+            getIntent().removeExtra(EXTRA_RESTORE_DESTINATION_ID);
+        } catch (IllegalArgumentException exception) {
+            Log.w(TAG, "Failed to restore destination id " + targetDestinationId
+                    + ". Destination may be invalid or not present in nav_graph.", exception);
+            getIntent().removeExtra(EXTRA_RESTORE_DESTINATION_ID);
+        }
+    }
+
+    private void updateProfileMenuIconTint() {
+        if (binding == null) return;
+        MenuItem profileItem = binding.topAppBar.getMenu().findItem(R.id.action_profile);
+        if (profileItem == null) return;
+
+        int iconColor = MaterialColors.getColor(binding.topAppBar, com.google.android.material.R.attr.colorOnSurface);
+        Drawable icon = profileItem.getIcon();
+        if (icon == null) {
+            icon = AppCompatResources.getDrawable(this, R.drawable.ic_profile_toolbar);
+        }
+        if (icon == null) {
+            Log.w(TAG, "Profile toolbar icon is null; check menu_profile.xml action_profile icon.");
+            return;
+        }
+        Drawable wrapped = DrawableCompat.wrap(icon.mutate());
+        DrawableCompat.setTintList(wrapped, ColorStateList.valueOf(iconColor));
+        profileItem.setIcon(wrapped);
+    }
+
     private void toggleThemeMode() {
         int currentMode = sessionManager.getThemeMode();
         int nextMode;
@@ -264,6 +311,9 @@ public class MainActivity extends AppCompatActivity {
         // over the transition. applySavedThemeMode() in the new onCreate() applies the theme
         // before super.onCreate() so there is no flicker.
         Intent restartIntent = new Intent(this, MainActivity.class);
+        if (navController != null && navController.getCurrentDestination() != null) {
+            restartIntent.putExtra(EXTRA_RESTORE_DESTINATION_ID, navController.getCurrentDestination().getId());
+        }
         startActivity(restartIntent);
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
