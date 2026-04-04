@@ -1,6 +1,5 @@
 package com.example.borrowhub.view;
 
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -169,9 +168,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         dropdownBinding.itemThemeToggle.setOnClickListener(v -> {
-            toggleThemeMode();
-            // Optional: Dismiss or update UI. For system-wide theme change, activity usually recreates.
             popupWindow.dismiss();
+            toggleThemeMode();
         });
 
         dropdownBinding.itemLogout.setOnClickListener(v -> {
@@ -252,18 +250,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         sessionManager.setThemeMode(nextMode);
-        AppCompatDelegate.setDefaultNightMode(nextMode);
-    }
-
-    @Override
-    public void recreate() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out);
-            overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, android.R.anim.fade_in, android.R.anim.fade_out);
-            super.recreate();
-        } else {
-            super.recreate();
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-        }
+        // Restart the activity with a smooth cross-fade instead of using Activity.recreate().
+        // recreate() is asynchronous and overridePendingTransition is not honoured for it,
+        // which causes a black-screen flash. Using startActivity + finish gives full control
+        // over the transition. applySavedThemeMode() in the new onCreate() applies the theme
+        // before super.onCreate() so there is no flicker.
+        Intent restartIntent = new Intent(this, MainActivity.class);
+        startActivity(restartIntent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        finish();
     }
 }
