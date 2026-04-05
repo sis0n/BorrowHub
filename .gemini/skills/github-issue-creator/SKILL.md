@@ -45,9 +45,15 @@ Follow these steps to create a GitHub issue:
 
 6.  **Verify**: Confirm the issue was created successfully and provide the link to the user.
 
-7.  **Relate Issues (if applicable)**: If you are generating two or more issues that are logically related (e.g., part of the same feature or plan):
+7.  **Relate Issues (if applicable)**: If you are generating two or more issues that are logically related (e.g., part of the same feature or plan). Be mindful because usually with the two or more issues is more likely a task that involves backend and mobile (frontend):
     - Create a "Master" tracking issue (Parent Issue) using the `gh` CLI.
-    - Add the related issues as sub-issues to the Master issue using the `mcp_github_sub_issue_write` tool.
+    - **CRITICAL**: To add sub-issues via the `mcp_github_sub_issue_write` tool, you MUST use the **internal database integer ID** of the sub-issue, not its display number (e.g., #102).
+        1. Fetch the integer ID for each sub-issue using the `gh` CLI:
+           ```bash
+           gh api repos/99lash/BorrowHub/issues/<DISPLAY_NUMBER> --jq .id
+           ```
+        2. Use the resulting long integer (e.g., `4207017606`) as the `sub_issue_id` in the `mcp_github_sub_issue_write` tool.
+        3. Use the Master issue's regular display number (e.g., `104`) as the `issue_number`.
     - Explicitly link the Master issue in the comments or body of the sub-tasks.
 
 ## Principles
