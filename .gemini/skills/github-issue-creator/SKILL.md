@@ -45,6 +45,11 @@ Follow these steps to create a GitHub issue:
 
 6.  **Verify**: Confirm the issue was created successfully and provide the link to the user.
 
+7.  **Relate Issues (if applicable)**: If you are generating two or more issues that are logically related (e.g., part of the same feature or plan):
+    - Create a "Master" tracking issue (Parent Issue) using the `gh` CLI.
+    - Add the related issues as sub-issues to the Master issue using the `mcp_github_sub_issue_write` tool.
+    - Explicitly link the Master issue in the comments or body of the sub-tasks.
+
 ## Principles
 
 - **Clarity**: Titles should be descriptive and follow project conventions (e.g., prefixing with `[FEAT]`, `[BUG]`, `[CHORE]`).

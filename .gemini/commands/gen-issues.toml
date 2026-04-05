@@ -2,5 +2,7 @@ description = "Generate GitHub issues"
 prompt = """
 Let's create github issues (deliverable tasks) that satisfies the '{{args}}'. 
 Don't forget to include test file as one of the task's deliverables only if applicable, 
-and always use github-issue-creator-skill.
+and always use github-issue-creator-skill. 
+
+If the two or more issues generated are related to each other, you MUST create a master (parent) issue and add the generated issues as sub-issues.
 """
