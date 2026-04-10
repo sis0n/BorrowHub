@@ -33,7 +33,7 @@ class UserService
         $user = $this->userRepository->create($data);
 
         $this->logService->log(
-            'User Created',
+            LogService::ACTION_CREATED,
             "Created user with username: {$user->username}, Role: {$user->role}",
             (string)$user->id,
             $user->name
@@ -51,7 +51,7 @@ class UserService
         $user = $this->userRepository->update($id, $data);
 
         $this->logService->log(
-            'User Updated',
+            LogService::ACTION_UPDATED,
             "Updated user fields: " . implode(', ', array_keys($data)),
             (string)$user->id,
             $user->name
@@ -74,7 +74,7 @@ class UserService
 
         if ($result) {
             $this->logService->log(
-                'User Deleted',
+                LogService::ACTION_DELETED,
                 "Deleted user with username: {$user->username}",
                 (string)$user->id,
                 $user->name
@@ -97,7 +97,7 @@ class UserService
         ]);
 
         $this->logService->log(
-            'Password Reset',
+            LogService::ACTION_UPDATED,
             "Reset password for user",
             (string)$user->id,
             $user->name

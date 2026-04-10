@@ -17,6 +17,10 @@ class LogController extends Controller
 
     public function indexActivityLogs(Request $request)
     {
+        $request->validate([
+            'action' => ['nullable', 'string', 'in:' . implode(',', LogService::VALID_ACTIONS)],
+        ]);
+
         $filters = $request->only(['search', 'action', 'per_page']);
         return $this->successResponse(
             $this->logService->getActivityLogs($filters),
@@ -26,6 +30,10 @@ class LogController extends Controller
 
     public function indexTransactionLogs(Request $request)
     {
+        $request->validate([
+            'action' => ['nullable', 'string', 'in:' . implode(',', LogService::VALID_ACTIONS)],
+        ]);
+
         $filters = $request->only(['search', 'action', 'per_page']);
         return $this->successResponse(
             $this->logService->getTransactionLogs($filters),

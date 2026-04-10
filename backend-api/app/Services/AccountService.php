@@ -33,7 +33,7 @@ class AccountService
         ]);
 
         $this->logService->log(
-            'Profile Updated',
+            LogService::ACTION_UPDATED,
             "Updated account profile (name/username).",
             (string)$updatedUser->id,
             $updatedUser->name
@@ -63,7 +63,7 @@ class AccountService
         ]);
 
         $this->logService->log(
-            'Password Changed',
+            LogService::ACTION_UPDATED,
             "Updated account password.",
             (string)$updatedUser->id,
             $updatedUser->name

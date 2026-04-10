@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Student;
 use App\Models\Item;
 use App\Models\ActivityLog;
+use App\Services\LogService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -28,7 +29,7 @@ class AuditTrailTest extends TestCase
             'performed_by' => $this->admin->name,
             'target_user_id' => '1',
             'target_user_name' => 'Test Target',
-            'action' => 'Test Action',
+            'action' => LogService::ACTION_CREATED,
             'details' => 'Test Details',
             'type' => 'activity'
         ]);
@@ -56,15 +57,15 @@ class AuditTrailTest extends TestCase
             'performed_by' => $this->admin->name,
             'target_user_id' => '1',
             'target_user_name' => 'Test Student',
-            'action' => 'Items Borrowed',
-            'details' => 'Items: Laptop',
+            'action' => LogService::ACTION_BORROWED,
+            'details' => 'Borrowed items: Laptop (1)',
             'type' => 'transaction'
         ]);
 
         $response = $this->actingAs($this->admin)->getJson('/api/v1/transaction-logs');
 
         $response->assertStatus(200)
-             ->assertJsonFragment(['action' => 'Items Borrowed']);
+             ->assertJsonFragment(['action' => LogService::ACTION_BORROWED]);
     }
 
     public function test_user_creation_logs_activity()
@@ -79,7 +80,7 @@ class AuditTrailTest extends TestCase
         $response->assertStatus(201);
 
         $this->assertDatabaseHas('activity_logs', [
-            'action' => 'User Created',
+            'action' => LogService::ACTION_CREATED,
             'performed_by' => $this->admin->name,
             'target_user_name' => 'New User'
         ]);
@@ -101,8 +102,86 @@ class AuditTrailTest extends TestCase
         $response->assertStatus(201);
 
         $this->assertDatabaseHas('activity_logs', [
-            'action' => 'Item Created',
+            'action' => LogService::ACTION_CREATED,
             'target_user_name' => 'Test Item'
         ]);
+    }
+
+    public function test_activity_logs_can_be_filtered_by_action()
+    {
+        ActivityLog::create([
+            'actor_id' => $this->admin->id,
+            'performed_by' => $this->admin->name,
+            'target_user_id' => '1',
+            'target_user_name' => 'Item A',
+            'action' => LogService::ACTION_CREATED,
+            'details' => 'Created item',
+            'type' => 'activity'
+        ]);
+
+        ActivityLog::create([
+            'actor_id' => $this->admin->id,
+            'performed_by' => $this->admin->name,
+            'target_user_id' => '2',
+            'target_user_name' => 'Item B',
+            'action' => LogService::ACTION_DELETED,
+            'details' => 'Deleted item',
+            'type' => 'activity'
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/activity-logs?action=' . LogService::ACTION_CREATED);
+
+        $response->assertStatus(200);
+        $data = $response->json('data.data');
+        $this->assertCount(1, $data);
+        $this->assertEquals(LogService::ACTION_CREATED, $data[0]['action']);
+    }
+
+    public function test_transaction_logs_can_be_filtered_by_action()
+    {
+        ActivityLog::create([
+            'actor_id' => $this->admin->id,
+            'performed_by' => $this->admin->name,
+            'target_user_id' => '1',
+            'target_user_name' => 'Student A',
+            'action' => LogService::ACTION_BORROWED,
+            'details' => 'Borrowed items: Laptop (1)',
+            'type' => 'transaction'
+        ]);
+
+        ActivityLog::create([
+            'actor_id' => $this->admin->id,
+            'performed_by' => $this->admin->name,
+            'target_user_id' => '1',
+            'target_user_name' => 'Student A',
+            'action' => LogService::ACTION_RETURNED,
+            'details' => 'Returned items: Laptop (1)',
+            'type' => 'transaction'
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/transaction-logs?action=' . LogService::ACTION_RETURNED);
+
+        $response->assertStatus(200);
+        $data = $response->json('data.data');
+        $this->assertCount(1, $data);
+        $this->assertEquals(LogService::ACTION_RETURNED, $data[0]['action']);
+    }
+
+    public function test_activity_logs_filter_rejects_invalid_action()
+    {
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/activity-logs?action=invalid_action');
+
+        $response->assertStatus(422);
+    }
+
+    public function test_transaction_logs_filter_rejects_invalid_action()
+    {
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/transaction-logs?action=Items+Borrowed');
+
+        $response->assertStatus(422);
     }
 }

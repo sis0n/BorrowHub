@@ -29,7 +29,7 @@ class ItemService
         $item = $this->itemRepository->create($data);
 
         $this->logService->log(
-            'Item Created',
+            LogService::ACTION_CREATED,
             "Created item with quantity: {$item->total_quantity}",
             (string)$item->id,
             $item->name
@@ -43,7 +43,7 @@ class ItemService
         $item = $this->itemRepository->update($id, $data);
 
         $this->logService->log(
-            'Item Updated',
+            LogService::ACTION_UPDATED,
             "Updated item fields: " . implode(', ', array_keys($data)),
             (string)$item->id,
             $item->name
@@ -59,7 +59,7 @@ class ItemService
 
         if ($result && $item) {
             $this->logService->log(
-                'Item Deleted',
+                LogService::ACTION_DELETED,
                 "Deleted item",
                 (string)$item->id,
                 $item->name

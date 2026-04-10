@@ -7,6 +7,20 @@ use Illuminate\Support\Facades\Auth;
 
 class LogService
 {
+    const ACTION_BORROWED = 'borrowed';
+    const ACTION_RETURNED = 'returned';
+    const ACTION_CREATED = 'created';
+    const ACTION_UPDATED = 'updated';
+    const ACTION_DELETED = 'deleted';
+
+    const VALID_ACTIONS = [
+        self::ACTION_BORROWED,
+        self::ACTION_RETURNED,
+        self::ACTION_CREATED,
+        self::ACTION_UPDATED,
+        self::ACTION_DELETED,
+    ];
+
     public function log(string $action, string $details, string $targetId, string $targetName, string $type = 'activity')
     {
         $user = Auth::user();
@@ -46,8 +60,8 @@ class LogService
             });
         }
         
-        if (isset($filters['action'])) {
-             $query->where('action', $filters['action']);
+        if (isset($filters['action']) && $filters['action'] !== '') {
+            $query->where('action', strtolower($filters['action']));
         }
 
         return $query->paginate($filters['per_page'] ?? 15);

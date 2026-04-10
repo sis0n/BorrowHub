@@ -79,7 +79,7 @@ class TransactionService
             }
 
             $this->logService->log(
-                'Items Borrowed',
+                LogService::ACTION_BORROWED,
                 "Borrowed items: " . implode(', ', $loggedItems),
                 (string)$student->id,
                 $student->name,
@@ -112,7 +112,7 @@ class TransactionService
             $record->refresh();
 
             $this->logService->log(
-                'Items Returned',
+                LogService::ACTION_RETURNED,
                 "Returned items: " . implode(', ', $loggedItems),
                 (string)$record->student->id,
                 $record->student->name,

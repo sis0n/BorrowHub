@@ -42,7 +42,7 @@ class StudentService
         $student = $this->studentRepository->create($data);
 
         $this->logService->log(
-            'Student Created',
+            LogService::ACTION_CREATED,
             "Created student in course ID: {$student->course_id}",
             (string)$student->id,
             $student->name
@@ -56,7 +56,7 @@ class StudentService
         $student = $this->studentRepository->update($id, $data);
 
         $this->logService->log(
-            'Student Updated',
+            LogService::ACTION_UPDATED,
             "Updated student fields: " . implode(', ', array_keys($data)),
             (string)$student->id,
             $student->name
@@ -72,7 +72,7 @@ class StudentService
 
         if ($result && $student) {
             $this->logService->log(
-                'Student Deleted',
+                LogService::ACTION_DELETED,
                 "Deleted student",
                 (string)$student->id,
                 $student->name
@@ -137,7 +137,7 @@ class StudentService
 
             if ($results['success'] > 0) {
                 $this->logService->log(
-                    'Students Imported',
+                    LogService::ACTION_CREATED,
                     "Imported {$results['success']} students. Failed: {$results['failed']}",
                     "N/A",
                     "Batch Import"
