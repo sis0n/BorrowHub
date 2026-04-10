@@ -140,6 +140,16 @@ public interface ApiService {
     @GET("api/v1/transactions/active")
     Call<ApiResponseDTO<List<BorrowRecordDTO>>> getActiveTransactions(@Header("Authorization") String token);
 
+    @GET("api/v1/transactions/history")
+    Call<ApiResponseDTO<PaginatedResponseDTO<BorrowRecordDTO>>> getTransactionHistory(
+            @Header("Authorization") String token,
+            @Query("search") String search,
+            @Query("status") String status,
+            @Query("date_from") String dateFrom,
+            @Query("date_to") String dateTo,
+            @Query("page") Integer page
+    );
+
     @POST("api/v1/transactions/borrow")
     Call<ApiResponseDTO<BorrowRecordDTO>> borrow(@Header("Authorization") String token, @Body BorrowRequestDTO request);
 

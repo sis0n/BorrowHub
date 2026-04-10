@@ -34,6 +34,20 @@ class TransactionController extends Controller
     }
 
     /**
+     * Get all borrow records (transaction history) with pagination and filtering.
+     */
+    public function history(Request $request): JsonResponse
+    {
+        $filters = $request->only(['search', 'status', 'date_from', 'date_to']);
+        $records = $this->transactionService->getTransactionHistory($filters);
+
+        return $this->successResponse(
+            BorrowRecordResource::collection($records)->response()->getData(true),
+            'Transaction history retrieved successfully.'
+        );
+    }
+
+    /**
      * Process a borrow transaction.
      */
     public function borrow(BorrowRequest $request): JsonResponse

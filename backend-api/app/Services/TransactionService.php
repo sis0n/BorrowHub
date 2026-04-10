@@ -35,6 +35,11 @@ class TransactionService
         return $this->borrowRecordRepository->getActiveRecords($filters);
     }
 
+    public function getTransactionHistory(array $filters)
+    {
+        return $this->borrowRecordRepository->getTransactionHistory($filters);
+    }
+
     public function processBorrow(array $data)
     {
         return DB::transaction(function () use ($data) {

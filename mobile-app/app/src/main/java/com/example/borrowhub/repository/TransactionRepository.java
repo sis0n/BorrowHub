@@ -16,6 +16,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import com.example.borrowhub.data.remote.dto.PaginatedResponseDTO;
+
 /**
  * Repository for managing transactions (borrow/return).
  */
@@ -117,6 +119,43 @@ public class TransactionRepository {
             return null;
         }
         return token.startsWith("Bearer ") ? token : "Bearer " + token;
+    }
+
+    /**
+     * Get all transaction records (history) from API with pagination and filtering.
+     */
+    public void getTransactionHistory(String search, String status, String dateFrom,
+                                      String dateTo, int page,
+                                      HistoryCallback callback) {
+        String token = getAuthHeader();
+
+        apiService.getTransactionHistory(token, search, status, dateFrom, dateTo, page)
+                .enqueue(new Callback<ApiResponseDTO<PaginatedResponseDTO<BorrowRecordDTO>>>() {
+                    @Override
+                    public void onResponse(
+                            Call<ApiResponseDTO<PaginatedResponseDTO<BorrowRecordDTO>>> call,
+                            Response<ApiResponseDTO<PaginatedResponseDTO<BorrowRecordDTO>>> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            PaginatedResponseDTO<BorrowRecordDTO> data = response.body().getData();
+                            if (callback != null) callback.onResult(data != null ? data.getData() : new java.util.ArrayList<>());
+                        } else {
+                            Log.e(TAG, "Failed to fetch transaction history: " + response.code());
+                            if (callback != null) callback.onResult(new java.util.ArrayList<>());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            Call<ApiResponseDTO<PaginatedResponseDTO<BorrowRecordDTO>>> call,
+                            Throwable t) {
+                        Log.e(TAG, "Error fetching transaction history", t);
+                        if (callback != null) callback.onResult(new java.util.ArrayList<>());
+                    }
+                });
+    }
+
+    public interface HistoryCallback {
+        void onResult(java.util.List<BorrowRecordDTO> records);
     }
 
     public interface OperationCallback {

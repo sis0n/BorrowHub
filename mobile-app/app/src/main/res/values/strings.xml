@@ -138,6 +138,15 @@
     <string name="transaction_subtitle">Manage borrow and return workflows</string>
     <string name="transaction_tab_borrow">Borrow Item</string>
     <string name="transaction_tab_return">Return Item</string>
+    <string name="transaction_tab_history">Records</string>
+
+    <!-- Transaction History -->
+    <string name="transaction_history_search_hint">Search by student name or number…</string>
+    <string name="transaction_history_empty_state">No transaction records match your search.</string>
+    <string name="transaction_history_status_borrowed">Borrowed</string>
+    <string name="transaction_history_status_returned">Returned</string>
+    <string name="transaction_history_borrowed_label">Borrowed: %1$s</string>
+    <string name="transaction_history_returned_label">Returned: %1$s</string>
 
     <!-- Borrow form - info card -->
     <string name="transaction_date_label">Date &amp; Time:</string>

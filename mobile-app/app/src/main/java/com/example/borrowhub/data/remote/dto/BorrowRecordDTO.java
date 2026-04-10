@@ -29,6 +29,9 @@ public class BorrowRecordDTO {
     @SerializedName("due_at")
     private String dueAt;
 
+    @SerializedName("returned_at")
+    private String returnedAt;
+
     @SerializedName("items")
     private List<ItemDTO> items;
 
@@ -89,6 +92,14 @@ public class BorrowRecordDTO {
 
     public void setDueAt(String dueAt) {
         this.dueAt = dueAt;
+    }
+
+    public String getReturnedAt() {
+        return returnedAt;
+    }
+
+    public void setReturnedAt(String returnedAt) {
+        this.returnedAt = returnedAt;
     }
 
     public List<ItemDTO> getItems() {

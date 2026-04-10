@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.borrowhub.R;
 import com.example.borrowhub.databinding.FragmentHomeBinding;
 import com.example.borrowhub.view.adapter.TransactionAdapter;
+import com.example.borrowhub.view.fragment.TransactionFragment;
 import com.example.borrowhub.viewmodel.DashboardViewModel;
 
 public class HomeFragment extends Fragment {
@@ -44,8 +45,11 @@ public class HomeFragment extends Fragment {
         binding.btnManageInventory.setOnClickListener(v -> 
             navController.navigate(R.id.inventoryFragment));
 
-        binding.btnViewAll.setOnClickListener(v -> 
-            navController.navigate(R.id.logsFragment));
+        binding.btnViewAll.setOnClickListener(v -> {
+            Bundle args = new Bundle();
+            args.putInt(TransactionFragment.ARG_INITIAL_TAB, TransactionFragment.TAB_HISTORY);
+            navController.navigate(R.id.transactionFragment, args);
+        });
 
         // Refresh data on swipe or when returning to this fragment
         viewModel.fetchData();

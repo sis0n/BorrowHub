@@ -99,6 +99,9 @@ public class TransactionViewModel extends AndroidViewModel {
     private final MutableLiveData<List<ActiveBorrow>> filteredBorrows = new MutableLiveData<>(new ArrayList<>());
     private String normalizedSearch = "";
 
+    // --- State: Transaction History ---
+    private final MutableLiveData<List<BorrowRecordDTO>> transactionHistory = new MutableLiveData<>(new ArrayList<>());
+
     // --- Data: Inventory ---
     private final LiveData<List<CategoryEntity>> categories;
     private final LiveData<List<ItemEntity>> allItems;
@@ -147,6 +150,9 @@ public class TransactionViewModel extends AndroidViewModel {
 
     // --- Getters: Return Workflow ---
     public LiveData<List<ActiveBorrow>> getFilteredBorrows() { return filteredBorrows; }
+
+    // --- Getters: Transaction History ---
+    public LiveData<List<BorrowRecordDTO>> getTransactionHistory() { return transactionHistory; }
 
     // --- Logic: Student Lookup ---
     public void lookupStudent(String studentNumber) {
@@ -285,6 +291,12 @@ public class TransactionViewModel extends AndroidViewModel {
             }
         });
         transactionRepository.getActiveTransactions(rawData);
+    }
+
+    // --- Logic: Transaction History ---
+    public void fetchTransactionHistory(String search) {
+        transactionRepository.getTransactionHistory(search, null, null, null, 1,
+                records -> transactionHistory.postValue(records));
     }
 
     public void setSearchQuery(String query) {

@@ -41,4 +41,34 @@ if (isset($filters['item_name'])) {
         ]);
         return $record;
     }
+
+    public function getTransactionHistory(array $filters = [])
+    {
+        $query = BorrowRecord::with(['student.course', 'items', 'staff']);
+
+        // Filter by search (student name or student number)
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->whereHas('student', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('student_number', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Filter by status
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        // Filter by date range
+        if (!empty($filters['date_from'])) {
+            $query->whereDate('borrowed_at', '>=', $filters['date_from']);
+        }
+
+        if (!empty($filters['date_to'])) {
+            $query->whereDate('borrowed_at', '<=', $filters['date_to']);
+        }
+
+        return $query->latest()->paginate(config('borrow.pagination_size', 15));
+    }
 }

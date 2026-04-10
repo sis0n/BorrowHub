@@ -21,7 +21,12 @@
         android:id="@+id/transactionFragment"
         android:name="com.example.borrowhub.view.fragment.TransactionFragment"
         android:label="Transaction"
-        tools:layout="@layout/fragment_transaction" />
+        tools:layout="@layout/fragment_transaction">
+        <argument
+            android:name="initial_tab"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
 
     <fragment
         android:id="@+id/logsFragment"

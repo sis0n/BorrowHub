@@ -17,6 +17,7 @@ class BorrowRecordResource extends JsonResource
             'status' => $this->status,
             'borrowed_at' => $this->borrowed_at,
             'due_at' => $this->due_at,
+            'returned_at' => $this->returned_at,
             'items' => ItemResource::collection($this->whenLoaded('items')),
             'created_at' => $this->created_at,
         ];

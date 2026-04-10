@@ -29,4 +29,12 @@ interface BorrowRecordRepositoryInterface
      * @return \App\Models\BorrowRecord
      */
     public function updateStatus(\App\Models\BorrowRecord $record, string $status, $returnedAt = null);
+
+    /**
+     * Get all borrow records (history) with optional filtering and pagination.
+     *
+     * @param array $filters Supported keys: search, status, date_from, date_to
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getTransactionHistory(array $filters = []);
 }

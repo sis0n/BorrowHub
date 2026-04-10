@@ -50,6 +50,7 @@ Route::prefix('v1')->group(function () {
 
         // Transaction Routes
         Route::get('/transactions/active', [TransactionController::class, 'index']);
+        Route::get('/transactions/history', [TransactionController::class, 'history']);
         Route::post('/transactions/borrow', [TransactionController::class, 'borrow']);
         Route::post('/transactions/{id}/return', [TransactionController::class, 'returnItem']);
     });

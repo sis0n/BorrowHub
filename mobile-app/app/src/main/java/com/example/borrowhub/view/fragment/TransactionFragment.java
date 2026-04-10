@@ -17,8 +17,10 @@ import com.google.android.material.tabs.TabLayout;
 
 public class TransactionFragment extends Fragment {
 
-    private static final int TAB_BORROW = 0;
-    private static final int TAB_RETURN = 1;
+    public static final String ARG_INITIAL_TAB = "initial_tab";
+    public static final int TAB_BORROW = 0;
+    public static final int TAB_RETURN = 1;
+    public static final int TAB_HISTORY = 2;
 
     private FragmentTransactionBinding binding;
     private TransactionViewModel viewModel;
@@ -40,9 +42,14 @@ public class TransactionFragment extends Fragment {
 
         setupTabs();
 
-        // Default to Borrow tab
+        // Default to Borrow tab, but allow overriding via argument
         if (savedInstanceState == null) {
-            showTab(TAB_BORROW);
+            int initialTab = TAB_BORROW;
+            if (getArguments() != null) {
+                initialTab = getArguments().getInt(ARG_INITIAL_TAB, TAB_BORROW);
+            }
+            binding.tabLayoutTransaction.selectTab(binding.tabLayoutTransaction.getTabAt(initialTab));
+            showTab(initialTab);
         }
     }
 
@@ -51,6 +58,8 @@ public class TransactionFragment extends Fragment {
                 binding.tabLayoutTransaction.newTab().setText(R.string.transaction_tab_borrow));
         binding.tabLayoutTransaction.addTab(
                 binding.tabLayoutTransaction.newTab().setText(R.string.transaction_tab_return));
+        binding.tabLayoutTransaction.addTab(
+                binding.tabLayoutTransaction.newTab().setText(R.string.transaction_tab_history));
 
         binding.tabLayoutTransaction.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -75,6 +84,8 @@ public class TransactionFragment extends Fragment {
         Fragment fragment;
         if (position == TAB_RETURN) {
             fragment = new ReturnItemFragment();
+        } else if (position == TAB_HISTORY) {
+            fragment = new TransactionHistoryFragment();
         } else {
             // BorrowItemFragment is the main borrow workflow implementation
             fragment = new BorrowItemFragment();
