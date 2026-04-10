@@ -34,6 +34,7 @@ public class SessionManagerTest {
         when(mockEditor.remove("auth_token")).thenReturn(mockEditor);
         when(mockEditor.putInt("theme_mode", AppCompatDelegate.MODE_NIGHT_YES)).thenReturn(mockEditor);
         when(mockEditor.putInt("theme_mode", AppCompatDelegate.MODE_NIGHT_NO)).thenReturn(mockEditor);
+        when(mockEditor.remove("user_name")).thenReturn(mockEditor);
         sessionManager = new SessionManager(mockContext);
     }
 

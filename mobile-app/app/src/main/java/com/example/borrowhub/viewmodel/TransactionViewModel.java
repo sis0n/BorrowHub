@@ -89,14 +89,16 @@ public class TransactionViewModel extends AndroidViewModel {
     // --- State: Info Card ---
     private final MutableLiveData<String> currentDateTime = new MutableLiveData<>();
     private final MutableLiveData<String> processedByName = new MutableLiveData<>("");
-    private final Handler clockHandler = new Handler(Looper.getMainLooper());
+    private Handler clockHandler;
     private final SimpleDateFormat clockFormat =
             new SimpleDateFormat("MMM dd, yyyy - hh:mm:ss a", Locale.US);
     private final Runnable clockRunnable = new Runnable() {
         @Override
         public void run() {
             currentDateTime.setValue(clockFormat.format(new Date()));
-            clockHandler.postDelayed(this, 1000);
+            if (clockHandler != null) {
+                clockHandler.postDelayed(this, 1000);
+            }
         }
     };
 
@@ -152,8 +154,16 @@ public class TransactionViewModel extends AndroidViewModel {
         // Fetch initial active transactions
         fetchActiveTransactions();
 
-        // Start live clock and load logged-in staff name
-        clockRunnable.run();
+        // Start live clock; guard Handler init for unit-test environments where
+        // Looper stubs throw RuntimeException.
+        try {
+            clockHandler = new Handler(Looper.getMainLooper());
+            clockRunnable.run();
+        } catch (RuntimeException ignored) {
+            clockHandler = null;
+        }
+
+        // Load logged-in staff name
         SessionManager sessionManager = new SessionManager(application);
         String name = sessionManager.getUserName();
         processedByName.setValue(name != null && !name.isEmpty()
@@ -478,6 +488,8 @@ public class TransactionViewModel extends AndroidViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
-        clockHandler.removeCallbacks(clockRunnable);
+        if (clockHandler != null) {
+            clockHandler.removeCallbacks(clockRunnable);
+        }
     }
 }
