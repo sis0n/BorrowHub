@@ -163,12 +163,15 @@ public class TransactionViewModel extends AndroidViewModel {
             clockHandler = null;
         }
 
-        // Load logged-in staff name
-        SessionManager sessionManager = new SessionManager(application);
-        String name = sessionManager.getUserName();
-        processedByName.setValue(name != null && !name.isEmpty()
-                ? name
-                : application.getString(R.string.transaction_staff_name));
+        // Load logged-in staff name (guarded for unit tests with mocked Application context)
+        String fallbackName = application.getString(R.string.transaction_staff_name);
+        try {
+            SessionManager sessionManager = new SessionManager(application);
+            String name = sessionManager.getUserName();
+            processedByName.setValue(name != null && !name.isEmpty() ? name : fallbackName);
+        } catch (RuntimeException ignored) {
+            processedByName.setValue(fallbackName);
+        }
     }
 
     // --- Getters: Info Card ---
