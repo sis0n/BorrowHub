@@ -1,0 +1,6 @@
+description = "Triages and delegates an issue to the Copilot Coding Agent using the parent/sub-issue workflow."
+prompt = """
+Let's triage and delegate GitHub issue #{{args}}.
+
+Follow the triaging and delegation workflow defined in @.gemini/skills/copilot-delegator/SKILL.md.
+"""
