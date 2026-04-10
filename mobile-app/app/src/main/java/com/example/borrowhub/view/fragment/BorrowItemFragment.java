@@ -58,7 +58,16 @@ public class BorrowItemFragment extends Fragment {
     }
 
     private void setupInfoCard() {
-        binding.tvCurrentDateTime.setText(viewModel.getCurrentDateTime());
+        viewModel.getCurrentDateTimeLive().observe(getViewLifecycleOwner(), dateTime -> {
+            if (dateTime != null) {
+                binding.tvCurrentDateTime.setText(dateTime);
+            }
+        });
+        viewModel.getProcessedByName().observe(getViewLifecycleOwner(), name -> {
+            if (name != null) {
+                binding.tvProcessedBy.setText(name);
+            }
+        });
     }
 
     private void setupStudentLookup() {

@@ -54,7 +54,21 @@ public class ReturnItemFragment extends Fragment implements ActiveBorrowAdapter.
         binding.rvActiveBorrows.setAdapter(adapter);
 
         setupSearchFilter();
+        setupInfoCard();
         observeActiveBorrows();
+    }
+
+    private void setupInfoCard() {
+        viewModel.getCurrentDateTimeLive().observe(getViewLifecycleOwner(), dateTime -> {
+            if (dateTime != null) {
+                binding.tvCurrentDateTime.setText(dateTime);
+            }
+        });
+        viewModel.getProcessedByName().observe(getViewLifecycleOwner(), name -> {
+            if (name != null) {
+                binding.tvProcessedBy.setText(name);
+            }
+        });
     }
 
     private void setupSearchFilter() {

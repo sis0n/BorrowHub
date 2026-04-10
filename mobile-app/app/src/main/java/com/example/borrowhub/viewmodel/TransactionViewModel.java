@@ -1,6 +1,8 @@
 package com.example.borrowhub.viewmodel;
 
 import android.app.Application;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -8,6 +10,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.borrowhub.R;
 import com.example.borrowhub.data.local.AppDatabase;
 import com.example.borrowhub.data.local.SessionManager;
 import com.example.borrowhub.data.local.entity.CategoryEntity;
@@ -29,6 +32,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class TransactionViewModel extends AndroidViewModel {
+    private static final String TAG = "TransactionViewModel";
 
     private final TransactionRepository transactionRepository;
     private final StudentRepository studentRepository;
@@ -83,6 +87,22 @@ public class TransactionViewModel extends AndroidViewModel {
         }
     }
 
+    // --- State: Info Card ---
+    private final MutableLiveData<String> currentDateTime = new MutableLiveData<>();
+    private final MutableLiveData<String> processedByName = new MutableLiveData<>("");
+    private Handler clockHandler;
+    private final SimpleDateFormat clockFormat =
+            new SimpleDateFormat("MMM dd, yyyy - hh:mm:ss a", Locale.US);
+    private final Runnable clockRunnable = new Runnable() {
+        @Override
+        public void run() {
+            currentDateTime.setValue(clockFormat.format(new Date()));
+            if (clockHandler != null) {
+                clockHandler.postDelayed(this, 1000);
+            }
+        }
+    };
+
     // --- State: Borrow Workflow ---
     private final MutableLiveData<String> studentNameInput = new MutableLiveData<>("");
     private final MutableLiveData<String> courseInput = new MutableLiveData<>("");
@@ -134,7 +154,36 @@ public class TransactionViewModel extends AndroidViewModel {
 
         // Fetch initial active transactions
         fetchActiveTransactions();
+
+        // Start live clock; guard Handler init for unit-test environments where
+        // Looper stubs throw RuntimeException.
+        try {
+            clockHandler = new Handler(Looper.getMainLooper());
+            clockRunnable.run();
+        } catch (RuntimeException ignored) {
+            clockHandler = null;
+        }
+
+        // Load logged-in staff name (guarded for unit tests with mocked Application context)
+        String fallbackName;
+        try {
+            fallbackName = application.getString(R.string.transaction_staff_name);
+        } catch (RuntimeException ignored) {
+            fallbackName = "System Staff";
+        }
+        try {
+            SessionManager sessionManager = new SessionManager(application);
+            String name = sessionManager.getUserName();
+            processedByName.setValue(name != null && !name.isEmpty() ? name : fallbackName);
+        } catch (NullPointerException ignored) {
+            Log.w(TAG, "Falling back to default staff name because SessionManager is unavailable.");
+            processedByName.setValue(fallbackName);
+        }
     }
+
+    // --- Getters: Info Card ---
+    public LiveData<String> getCurrentDateTimeLive() { return currentDateTime; }
+    public LiveData<String> getProcessedByName() { return processedByName; }
 
     // --- Getters: Borrow Workflow ---
     public LiveData<String> getStudentName() { return studentNameInput; }
@@ -444,5 +493,13 @@ public class TransactionViewModel extends AndroidViewModel {
                 itemNames,
                 formattedDateTime
         );
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        if (clockHandler != null) {
+            clockHandler.removeCallbacks(clockRunnable);
+        }
     }
 }
