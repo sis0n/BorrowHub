@@ -169,7 +169,7 @@ public class TransactionViewModel extends AndroidViewModel {
             SessionManager sessionManager = new SessionManager(application);
             String name = sessionManager.getUserName();
             processedByName.setValue(name != null && !name.isEmpty() ? name : fallbackName);
-        } catch (RuntimeException ignored) {
+        } catch (NullPointerException ignored) {
             processedByName.setValue(fallbackName);
         }
     }
