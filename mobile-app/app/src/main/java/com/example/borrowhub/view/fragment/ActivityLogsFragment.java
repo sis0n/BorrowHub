@@ -43,7 +43,9 @@ public class ActivityLogsFragment extends Fragment {
         binding.rvLogs.setAdapter(logAdapter);
 
         setupActionFilter();
+        setupDatePeriodFilter();
         setupSearch();
+        setupPaginationButtons();
         observeLogs();
     }
 
@@ -71,6 +73,30 @@ public class ActivityLogsFragment extends Fragment {
         });
     }
 
+    private void setupDatePeriodFilter() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                viewModel.getDatePeriodOptions()
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spinnerDatePeriod.setAdapter(adapter);
+        binding.spinnerDatePeriod.setSelection(0);
+
+        binding.spinnerDatePeriod.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                String selected = (String) parent.getItemAtPosition(position);
+                viewModel.setActivityDatePeriod(selected);
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                viewModel.setActivityDatePeriod(LogsViewModel.DATE_PERIOD_ALL_TIME);
+            }
+        });
+    }
+
     private void setupSearch() {
         binding.etSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -88,12 +114,32 @@ public class ActivityLogsFragment extends Fragment {
         });
     }
 
+    private void setupPaginationButtons() {
+        binding.btnPrev.setOnClickListener(v -> viewModel.previousActivityPage());
+        binding.btnNext.setOnClickListener(v -> viewModel.nextActivityPage());
+    }
+
     private void observeLogs() {
         viewModel.getActivityLogs().observe(getViewLifecycleOwner(), logs -> {
             logAdapter.setLogs(logs);
             boolean isEmpty = logs == null || logs.isEmpty();
             binding.tvEmptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         });
+
+        viewModel.getActivityCurrentPage().observe(getViewLifecycleOwner(), page -> updatePageIndicator());
+        viewModel.getActivityTotalPages().observe(getViewLifecycleOwner(), total -> updatePageIndicator());
+    }
+
+    private void updatePageIndicator() {
+        Integer current = viewModel.getActivityCurrentPage().getValue();
+        Integer total = viewModel.getActivityTotalPages().getValue();
+        if (current == null) current = 1;
+        if (total == null) total = 1;
+
+        binding.tvPageIndicator.setText(getString(R.string.logs_page_format, current, total));
+        binding.btnPrev.setEnabled(current > 1);
+        binding.btnNext.setEnabled(current < total);
+        binding.layoutPagination.setVisibility(total > 1 ? View.VISIBLE : View.GONE);
     }
 
     @Override
