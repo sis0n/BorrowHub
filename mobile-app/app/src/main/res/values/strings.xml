@@ -221,6 +221,16 @@
     <string name="logs_filter_created">Created</string>
     <string name="logs_filter_updated">Updated</string>
     <string name="logs_filter_deleted">Deleted</string>
+    <string name="logs_date_period_today">Today</string>
+    <string name="logs_date_period_last_7_days">Last 7 Days</string>
+    <string name="logs_date_period_last_30_days">Last 30 Days</string>
+    <string name="logs_date_period_this_month">This Month</string>
+    <string name="logs_date_period_custom_range">Custom Range\u2026</string>
+    <string name="logs_date_period_all_time">All Time</string>
+    <string name="logs_page_format">Page %1$d of %2$d</string>
+    <string name="logs_page_prev">Prev</string>
+    <string name="logs_page_next">Next</string>
+    <string name="logs_page_default">Page 1 of 1</string>
 
     <!-- Account Settings -->
     <string name="account_settings_title">Account &amp; Security</string>
