@@ -24,6 +24,10 @@ public class TransactionLogEntity {
     public String targetUserName;
 
     @NonNull
+    @ColumnInfo(name = "target_type")
+    public String targetType;
+
+    @NonNull
     public String action;
 
     @NonNull
@@ -37,6 +41,7 @@ public class TransactionLogEntity {
         performedBy = "";
         targetUserId = "";
         targetUserName = "";
+        targetType = "";
         action = "";
         details = "";
         createdAt = "";
@@ -44,12 +49,13 @@ public class TransactionLogEntity {
 
     @Ignore
     public TransactionLogEntity(long id, @NonNull String performedBy, @NonNull String targetUserId,
-                                @NonNull String targetUserName, @NonNull String action,
-                                @NonNull String details, @NonNull String createdAt) {
+                                @NonNull String targetUserName, @NonNull String targetType,
+                                @NonNull String action, @NonNull String details, @NonNull String createdAt) {
         this.id = id;
         this.performedBy = performedBy;
         this.targetUserId = targetUserId;
         this.targetUserName = targetUserName;
+        this.targetType = targetType;
         this.action = action;
         this.details = details;
         this.createdAt = createdAt;
@@ -69,6 +75,10 @@ public class TransactionLogEntity {
 
     public String getTargetUserName() {
         return targetUserName;
+    }
+
+    public String getTargetType() {
+        return targetType;
     }
 
     public String getAction() {

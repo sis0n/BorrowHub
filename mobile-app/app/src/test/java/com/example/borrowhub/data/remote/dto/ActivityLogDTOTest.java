@@ -51,7 +51,7 @@ public class ActivityLogDTOTest {
     @Test
     public void activityLogDTO_allFields_deserializeCorrectly() {
         String json = "{\"id\":3,\"performed_by\":\"Staff (Ana)\",\"target_user_id\":\"STU003\","
-                + "\"target_user_name\":\"Bob Cruz\",\"action\":\"deleted\","
+                + "\"target_user_name\":\"Bob Cruz\",\"target_type\":\"student\",\"action\":\"deleted\","
                 + "\"details\":\"Deleted item: Old HDMI Cable\",\"created_at\":\"2026-04-03T10:15:00Z\"}";
 
         ActivityLogDTO dto = gson.fromJson(json, ActivityLogDTO.class);
@@ -60,6 +60,7 @@ public class ActivityLogDTOTest {
         assertEquals("Staff (Ana)", dto.getPerformedBy());
         assertEquals("STU003", dto.getTargetUserId());
         assertEquals("Bob Cruz", dto.getTargetUserName());
+        assertEquals("student", dto.getTargetType());
         assertEquals("deleted", dto.getAction());
         assertEquals("Deleted item: Old HDMI Cable", dto.getDetails());
         assertEquals("2026-04-03T10:15:00Z", dto.getCreatedAt());
@@ -68,7 +69,7 @@ public class ActivityLogDTOTest {
     @Test
     public void activityLogDTO_nullPerformedBy_returnsNull() {
         String json = "{\"id\":4,\"performed_by\":null,\"target_user_id\":\"STU004\","
-                + "\"target_user_name\":\"Carol Lee\",\"action\":\"updated\","
+                + "\"target_user_name\":\"Carol Lee\",\"target_type\":\"student\",\"action\":\"updated\","
                 + "\"details\":\"Updated profile\",\"created_at\":\"2026-04-04T11:00:00Z\"}";
 
         ActivityLogDTO dto = gson.fromJson(json, ActivityLogDTO.class);
@@ -79,7 +80,7 @@ public class ActivityLogDTOTest {
     @Test
     public void activityLogDTO_nullTargetUserName_returnsNull() {
         String json = "{\"id\":5,\"performed_by\":\"System\",\"target_user_id\":\"SYSTEM\","
-                + "\"target_user_name\":null,\"action\":\"created\","
+                + "\"target_user_name\":null,\"target_type\":\"user\",\"action\":\"created\","
                 + "\"details\":\"System event\",\"created_at\":\"2026-04-05T12:00:00Z\"}";
 
         ActivityLogDTO dto = gson.fromJson(json, ActivityLogDTO.class);
@@ -92,10 +93,10 @@ public class ActivityLogDTOTest {
         String json = "{\"status\":\"success\",\"message\":\"Activity logs retrieved successfully.\","
                 + "\"data\":{\"current_page\":1,\"data\":["
                 + "{\"id\":10,\"performed_by\":\"Admin (John)\",\"target_user_id\":\"STU010\","
-                + "\"target_user_name\":\"Diana Prince\",\"action\":\"borrowed\","
+                + "\"target_user_name\":\"Diana Prince\",\"target_type\":\"student\",\"action\":\"borrowed\","
                 + "\"details\":\"Borrowed Laptop\",\"created_at\":\"2026-04-06T08:00:00Z\"},"
                 + "{\"id\":11,\"performed_by\":\"Staff (Sara)\",\"target_user_id\":\"STU011\","
-                + "\"target_user_name\":\"Clark Kent\",\"action\":\"returned\","
+                + "\"target_user_name\":\"Clark Kent\",\"target_type\":\"student\",\"action\":\"returned\","
                 + "\"details\":\"Returned Projector\",\"created_at\":\"2026-04-06T09:00:00Z\"}"
                 + "],\"last_page\":1,\"total\":2}}";
 
@@ -108,8 +109,10 @@ public class ActivityLogDTOTest {
 
         assertEquals("Admin (John)", logs.get(0).getPerformedBy());
         assertEquals("Diana Prince", logs.get(0).getTargetUserName());
+        assertEquals("student", logs.get(0).getTargetType());
 
         assertEquals("Staff (Sara)", logs.get(1).getPerformedBy());
         assertEquals("Clark Kent", logs.get(1).getTargetUserName());
+        assertEquals("student", logs.get(1).getTargetType());
     }
 }

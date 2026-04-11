@@ -15,6 +15,9 @@ public class ActivityLogDTO {
     @SerializedName("target_user_name")
     private String targetUserName;
 
+    @SerializedName("target_type")
+    private String targetType;
+
     @SerializedName("action")
     private String action;
 
@@ -38,6 +41,10 @@ public class ActivityLogDTO {
 
     public String getTargetUserName() {
         return targetUserName;
+    }
+
+    public String getTargetType() {
+        return targetType;
     }
 
     public String getAction() {

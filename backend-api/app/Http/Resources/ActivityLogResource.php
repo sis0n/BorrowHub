@@ -23,6 +23,7 @@ class ActivityLogResource extends JsonResource
             'performed_by'     => optional($this->actor)->name ?? 'System',
             'target_user_id'   => $this->target_user_id,
             'target_user_name' => $this->resolveTargetName(),
+            'target_type'      => $this->target_type,
             'action'           => $this->action,
             'details'          => $this->details,
             'type'             => $this->type,

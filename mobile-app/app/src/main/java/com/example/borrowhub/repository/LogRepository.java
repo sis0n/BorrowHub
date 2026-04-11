@@ -154,6 +154,7 @@ public class LogRepository {
                 safeString(dto.getPerformedBy()),
                 safeString(dto.getTargetUserId()),
                 safeString(dto.getTargetUserName()),
+                safeString(dto.getTargetType()),
                 safeString(dto.getAction()),
                 safeString(dto.getDetails()),
                 safeString(dto.getCreatedAt())
@@ -166,6 +167,7 @@ public class LogRepository {
                 safeString(dto.getPerformedBy()),
                 safeString(dto.getTargetUserId()),
                 safeString(dto.getTargetUserName()),
+                safeString(dto.getTargetType()),
                 safeString(dto.getAction()),
                 safeString(dto.getDetails()),
                 safeString(dto.getCreatedAt())

@@ -64,8 +64,8 @@ public class LogsViewModelTest {
     @Test
     public void transactionFilterByActionAndSearch_returnsMatchingLogs() {
         transactionSource.setValue(Arrays.asList(
-                new TransactionLogEntity(1001L, "Sarah Chen", "u1", "Sarah", "Borrowed", "Borrowed Projector", "Mar 20, 2026 09:15 AM"),
-                new TransactionLogEntity(1002L, "Mark Santos", "u2", "Mark", "Borrowed", "Borrowed Camera", "Mar 20, 2026 10:42 AM")
+                new TransactionLogEntity(1001L, "Sarah Chen", "u1", "Sarah", "user", "Borrowed", "Borrowed Projector", "Mar 20, 2026 09:15 AM"),
+                new TransactionLogEntity(1002L, "Mark Santos", "u2", "Mark", "user", "Borrowed", "Borrowed Camera", "Mar 20, 2026 10:42 AM")
         ));
 
         viewModel.setTransactionActionFilter("Borrowed");
@@ -82,8 +82,8 @@ public class LogsViewModelTest {
     @Test
     public void activityFilterByActionAndSearch_returnsMatchingLogs() {
         activitySource.setValue(Arrays.asList(
-                new ActivityLogEntity(2001L, "System Staff", "u1", "User One", "Deleted", "Deleted inventory item: Old HDMI Cable", "Mar 17, 2026 04:50 PM"),
-                new ActivityLogEntity(2002L, "Admin User", "u2", "User Two", "Deleted", "Deleted inventory item: Broken Mouse", "Mar 18, 2026 08:50 PM")
+                new ActivityLogEntity(2001L, "System Staff", "u1", "User One", "user", "Deleted", "Deleted inventory item: Old HDMI Cable", "Mar 17, 2026 04:50 PM"),
+                new ActivityLogEntity(2002L, "Admin User", "u2", "User Two", "user", "Deleted", "Deleted inventory item: Broken Mouse", "Mar 18, 2026 08:50 PM")
         ));
 
         viewModel.setActivityActionFilter("Deleted");

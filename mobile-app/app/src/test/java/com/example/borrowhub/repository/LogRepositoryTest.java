@@ -74,7 +74,7 @@ public class LogRepositoryTest {
 
     @Test
     public void getActivityLogs_withAction_filterUsesDaoAndCachesResponse() {
-        String json = "{\"status\":\"success\",\"message\":\"ok\",\"data\":{\"current_page\":1,\"data\":[{\"id\":1,\"performed_by\":\"Staff (Maria)\",\"target_user_id\":\"STU123\",\"target_user_name\":\"Lisa\",\"action\":\"Added\",\"details\":\"New item\",\"created_at\":\"2026-03-20T10:00:00Z\"}],\"last_page\":1,\"total\":1}}";
+        String json = "{\"status\":\"success\",\"message\":\"ok\",\"data\":{\"current_page\":1,\"data\":[{\"id\":1,\"performed_by\":\"Staff (Maria)\",\"target_user_id\":\"STU123\",\"target_user_name\":\"Lisa\",\"target_type\":\"student\",\"action\":\"Added\",\"details\":\"New item\",\"created_at\":\"2026-03-20T10:00:00Z\"}],\"last_page\":1,\"total\":1}}";
         Type responseType = new TypeToken<ApiResponseDTO<PaginatedResponseDTO<ActivityLogDTO>>>() {}.getType();
         ApiResponseDTO<PaginatedResponseDTO<ActivityLogDTO>> apiResponse = new Gson().fromJson(json, responseType);
 
@@ -101,11 +101,12 @@ public class LogRepositoryTest {
         assertEquals("Staff (Maria)", entity.getPerformedBy());
         assertEquals("STU123", entity.getTargetUserId());
         assertEquals("Lisa", entity.getTargetUserName());
+        assertEquals("student", entity.getTargetType());
     }
 
     @Test
     public void getTransactionLogs_noFilters_usesAllLogsDaoAndCachesResponse() {
-        String json = "{\"status\":\"success\",\"message\":\"ok\",\"data\":{\"current_page\":1,\"data\":[{\"id\":11,\"performed_by\":\"Staff (Ana)\",\"target_user_id\":\"EMP123\",\"target_user_name\":\"James\",\"action\":\"Borrowed\",\"details\":\"Laptop\",\"created_at\":\"2026-03-20T12:00:00Z\"}],\"last_page\":1,\"total\":1}}";
+        String json = "{\"status\":\"success\",\"message\":\"ok\",\"data\":{\"current_page\":1,\"data\":[{\"id\":11,\"performed_by\":\"Staff (Ana)\",\"target_user_id\":\"EMP123\",\"target_user_name\":\"James\",\"target_type\":\"student\",\"action\":\"Borrowed\",\"details\":\"Laptop\",\"created_at\":\"2026-03-20T12:00:00Z\"}],\"last_page\":1,\"total\":1}}";
         Type responseType = new TypeToken<ApiResponseDTO<PaginatedResponseDTO<TransactionLogDTO>>>() {}.getType();
         ApiResponseDTO<PaginatedResponseDTO<TransactionLogDTO>> apiResponse = new Gson().fromJson(json, responseType);
 
@@ -130,6 +131,7 @@ public class LogRepositoryTest {
         assertEquals(1, captor.getValue().size());
         TransactionLogEntity entity = captor.getValue().get(0);
         assertEquals("Staff (Ana)", entity.getPerformedBy());
+        assertEquals("student", entity.getTargetType());
         assertEquals("Borrowed", entity.getAction());
     }
 
