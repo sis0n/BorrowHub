@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->softDeletes();
+        Schema::table('activity_logs', function (Blueprint $table) {
+            $table->dropColumn(['performed_by', 'target_user_name']);
         });
     }
 
@@ -21,8 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->dropSoftDeletes();
+        Schema::table('activity_logs', function (Blueprint $table) {
+            $table->string('performed_by')->after('actor_id');
+            $table->string('target_user_name')->after('target_user_id');
         });
     }
 };
