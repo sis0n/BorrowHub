@@ -115,7 +115,7 @@ public class UserRepositoryTest {
         // Assert
         verify(mockSessionManager).saveAuthToken("Bearer fake_token");
         verify(mockUserDao, timeout(500)).insertUser(any(User.class));
-        verify(mockObserver).onChanged(true);
+        verify(mockObserver, timeout(500)).onChanged(true);
     }
 
     @Test
