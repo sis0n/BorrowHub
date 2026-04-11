@@ -22,7 +22,7 @@ When asked to delegate an issue:
 
 #### If PARENT Issue:
 - **Do NOT write code.**
-- Create a PR branch following `CONTRIBUTING.md` patterns: `feature/<issue-number>-parent-master`.
+- Tell Copilot Coding Agent to follow `CONTRIBUTING.md` patterns: `feature/<issue-number>-parent-master`.
 - Base this branch on `master`.
 - PR Body MUST follow the `.github/PULL_REQUEST_TEMPLATE.md` and:
     - Describe the feature overview.
@@ -32,7 +32,7 @@ When asked to delegate an issue:
 
 #### If SUB-ISSUE:
 - Implement the code.
-- Create a PR branch following `CONTRIBUTING.md` patterns: `feature/<issue-number>-<short-desc>`.
+- Tell Copilot Coding Agent to follow `CONTRIBUTING.md` patterns: `feature/<issue-number>-<short-desc>`.
 - Target the PR base to the current Parent PR branch (NOT `master`).
 - PR Body MUST follow the `.github/PULL_REQUEST_TEMPLATE.md` and:
     - Include standard PR template content.
@@ -41,7 +41,7 @@ When asked to delegate an issue:
 
 #### If SINGLE Issue:
 - Implement the code.
-- Create a PR branch following `CONTRIBUTING.md` patterns: `feature/<issue-number>-<short-desc>`.
+- Tell Copilot Coding Agent to follow `CONTRIBUTING.md` patterns: `feature/<issue-number>-<short-desc>`.
 - Base this branch on `master`.
 - PR Body MUST follow the `.github/PULL_REQUEST_TEMPLATE.md` and:
     - Reference: `Closes #<issue-number>`.
