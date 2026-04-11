@@ -31,8 +31,10 @@ Route::prefix('v1')->group(function () {
         Route::middleware('role:admin')->group(function () {
             Route::post('/users/{id}/reset-password', [UserController::class, 'resetPassword']);
             Route::apiResource('users', UserController::class);
-            Route::get('/activity-logs', [LogController::class, 'indexActivityLogs']);
-            Route::get('/transaction-logs', [LogController::class, 'indexTransactionLogs']);
+
+            // Student Management Routes (Admin Only)
+            Route::post('/students/import', [StudentController::class, 'import']);
+            Route::apiResource('students', StudentController::class);
         });
 
         Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -44,9 +46,9 @@ Route::prefix('v1')->group(function () {
 
         Route::apiResource('items', ItemController::class);
 
-        // Student Management Routes
-        Route::post('/students/import', [StudentController::class, 'import']);
-        Route::apiResource('students', StudentController::class);
+        // Audit Trail Routes (Admin + Staff)
+        Route::get('/activity-logs', [LogController::class, 'indexActivityLogs']);
+        Route::get('/transaction-logs', [LogController::class, 'indexTransactionLogs']);
 
         // Transaction Routes
         Route::get('/transactions/active', [TransactionController::class, 'index']);

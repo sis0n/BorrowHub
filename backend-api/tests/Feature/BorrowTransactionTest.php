@@ -39,15 +39,7 @@ class BorrowTransactionTest extends TestCase
         $response = $this->actingAs($this->staff)
             ->getJson("/api/v1/students/{$this->student->student_number}");
 
-        $response->assertStatus(200)
-            ->assertJsonPath(
-                'data.student_number',
-                $this->student->student_number
-            )
-            ->assertJsonPath(
-                'data.course',
-                $this->student->course->name
-            );
+        $response->assertStatus(403);
     }
 
     public function test_can_process_borrow_transaction()
