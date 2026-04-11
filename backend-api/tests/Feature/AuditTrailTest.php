@@ -8,6 +8,7 @@ use App\Models\Item;
 use App\Models\ActivityLog;
 use App\Services\LogService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class AuditTrailTest extends TestCase
@@ -264,6 +265,96 @@ class AuditTrailTest extends TestCase
     {
         $response = $this->actingAs($this->admin)
             ->getJson('/api/v1/transaction-logs?action=invalid_action');
+
+        $response->assertStatus(422);
+    }
+
+    public function test_activity_logs_can_be_filtered_by_date_range()
+    {
+        Carbon::setTestNow('2025-06-15 10:00:00');
+        $inRange = ActivityLog::create([
+            'actor_id'       => $this->admin->id,
+            'target_user_id' => '1',
+            'target_type'    => 'item',
+            'action'         => LogService::ACTION_CREATED,
+            'details'        => 'Created item inside range',
+            'type'           => 'activity',
+        ]);
+        Carbon::setTestNow();
+
+        Carbon::setTestNow('2025-06-20 10:00:00');
+        ActivityLog::create([
+            'actor_id'       => $this->admin->id,
+            'target_user_id' => '2',
+            'target_type'    => 'item',
+            'action'         => LogService::ACTION_DELETED,
+            'details'        => 'Deleted item outside range',
+            'type'           => 'activity',
+        ]);
+        Carbon::setTestNow();
+
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/activity-logs?start_date=2025-06-14&end_date=2025-06-16');
+
+        $response->assertStatus(200);
+        $data = $response->json('data.data');
+        $this->assertCount(1, $data);
+        $this->assertEquals($inRange->id, $data[0]['id']);
+    }
+
+    public function test_transaction_logs_can_be_filtered_by_date_range()
+    {
+        Carbon::setTestNow('2025-06-15 12:00:00');
+        $inRange = ActivityLog::create([
+            'actor_id'       => $this->admin->id,
+            'target_user_id' => '1',
+            'target_type'    => 'student',
+            'action'         => LogService::ACTION_BORROWED,
+            'details'        => 'Borrowed inside range',
+            'type'           => 'transaction',
+        ]);
+        Carbon::setTestNow();
+
+        Carbon::setTestNow('2025-06-22 12:00:00');
+        ActivityLog::create([
+            'actor_id'       => $this->admin->id,
+            'target_user_id' => '1',
+            'target_type'    => 'student',
+            'action'         => LogService::ACTION_RETURNED,
+            'details'        => 'Returned outside range',
+            'type'           => 'transaction',
+        ]);
+        Carbon::setTestNow();
+
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/transaction-logs?start_date=2025-06-15&end_date=2025-06-15');
+
+        $response->assertStatus(200);
+        $data = $response->json('data.data');
+        $this->assertCount(1, $data);
+        $this->assertEquals($inRange->id, $data[0]['id']);
+    }
+
+    public function test_activity_logs_date_filter_rejects_invalid_date_format()
+    {
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/activity-logs?start_date=not-a-date');
+
+        $response->assertStatus(422);
+    }
+
+    public function test_transaction_logs_date_filter_rejects_invalid_date_format()
+    {
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/transaction-logs?start_date=15-06-2025');
+
+        $response->assertStatus(422);
+    }
+
+    public function test_activity_logs_date_filter_rejects_end_date_before_start_date()
+    {
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/v1/activity-logs?start_date=2025-06-20&end_date=2025-06-10');
 
         $response->assertStatus(422);
     }
