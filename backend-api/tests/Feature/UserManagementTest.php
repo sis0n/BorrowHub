@@ -92,7 +92,7 @@ class UserManagementTest extends TestCase
                          ->deleteJson("/api/v1/users/{$user->id}");
 
         $response->assertStatus(200);
-        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+        $this->assertSoftDeleted('users', ['id' => $user->id]);
     }
 
     public function test_admin_can_reset_user_password()

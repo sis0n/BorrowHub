@@ -32,7 +32,7 @@ class ItemService
             LogService::ACTION_CREATED,
             "Created item with quantity: {$item->total_quantity}",
             (string)$item->id,
-            $item->name
+            'item'
         );
 
         return $item;
@@ -46,7 +46,7 @@ class ItemService
             LogService::ACTION_UPDATED,
             "Updated item fields: " . implode(', ', array_keys($data)),
             (string)$item->id,
-            $item->name
+            'item'
         );
 
         return $item;
@@ -62,7 +62,7 @@ class ItemService
                 LogService::ACTION_DELETED,
                 "Deleted item",
                 (string)$item->id,
-                $item->name
+                'item'
             );
         }
 

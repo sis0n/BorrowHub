@@ -140,6 +140,6 @@ class StudentManagementTest extends TestCase
             ->deleteJson("/api/v1/students/{$student->id}");
 
         $response->assertStatus(200);
-        $this->assertDatabaseMissing('students', ['id' => $student->id]);
+        $this->assertSoftDeleted('students', ['id' => $student->id]);
     }
 }

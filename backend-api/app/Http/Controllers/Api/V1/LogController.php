@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ActivityLogResource;
 use App\Services\LogService;
 use Illuminate\Http\Request;
 
@@ -22,10 +23,10 @@ class LogController extends Controller
         ]);
 
         $filters = $request->only(['search', 'action', 'per_page']);
-        return $this->successResponse(
-            $this->logService->getActivityLogs($filters),
-            'Activity logs retrieved successfully.'
-        );
+        $logs = $this->logService->getActivityLogs($filters);
+        $logs->getCollection()->transform(fn ($log) => (new ActivityLogResource($log))->toArray($request));
+
+        return $this->successResponse($logs, 'Activity logs retrieved successfully.');
     }
 
     public function indexTransactionLogs(Request $request)
@@ -35,9 +36,9 @@ class LogController extends Controller
         ]);
 
         $filters = $request->only(['search', 'action', 'per_page']);
-        return $this->successResponse(
-            $this->logService->getTransactionLogs($filters),
-            'Transaction logs retrieved successfully.'
-        );
+        $logs = $this->logService->getTransactionLogs($filters);
+        $logs->getCollection()->transform(fn ($log) => (new ActivityLogResource($log))->toArray($request));
+
+        return $this->successResponse($logs, 'Transaction logs retrieved successfully.');
     }
 }

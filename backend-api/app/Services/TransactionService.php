@@ -82,7 +82,7 @@ class TransactionService
                 LogService::ACTION_BORROWED,
                 "Borrowed items: " . implode(', ', $loggedItems),
                 (string)$student->id,
-                $student->name,
+                'student',
                 'transaction'
             );
 
@@ -115,7 +115,7 @@ class TransactionService
                 LogService::ACTION_RETURNED,
                 "Returned items: " . implode(', ', $loggedItems),
                 (string)$record->student->id,
-                $record->student->name,
+                'student',
                 'transaction'
             );
 

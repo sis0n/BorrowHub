@@ -25,13 +25,12 @@ class AuditTrailTest extends TestCase
     public function test_admin_can_view_activity_logs()
     {
         ActivityLog::create([
-            'actor_id' => $this->admin->id,
-            'performed_by' => $this->admin->name,
-            'target_user_id' => '1',
-            'target_user_name' => 'Test Target',
-            'action' => LogService::ACTION_CREATED,
-            'details' => 'Test Details',
-            'type' => 'activity'
+            'actor_id'       => $this->admin->id,
+            'target_user_id' => (string) $this->admin->id,
+            'target_type'    => 'user',
+            'action'         => LogService::ACTION_CREATED,
+            'details'        => 'Test Details',
+            'type'           => 'activity',
         ]);
 
         $response = $this->actingAs($this->admin)->getJson('/api/v1/activity-logs');
@@ -43,23 +42,23 @@ class AuditTrailTest extends TestCase
                 'data' => [
                     'data' => [
                         '*' => [
-                            'id', 'actor_id', 'performed_by', 'action', 'details', 'created_at'
-                        ]
-                    ]
-                ]
+                            'id', 'actor_id', 'performed_by', 'target_user_id', 'target_user_name',
+                            'action', 'details', 'created_at',
+                        ],
+                    ],
+                ],
             ]);
     }
 
     public function test_admin_can_view_transaction_logs()
     {
         ActivityLog::create([
-            'actor_id' => $this->admin->id,
-            'performed_by' => $this->admin->name,
+            'actor_id'       => $this->admin->id,
             'target_user_id' => '1',
-            'target_user_name' => 'Test Student',
-            'action' => LogService::ACTION_BORROWED,
-            'details' => 'Borrowed items: Laptop (1)',
-            'type' => 'transaction'
+            'target_type'    => 'student',
+            'action'         => LogService::ACTION_BORROWED,
+            'details'        => 'Borrowed items: Laptop (1)',
+            'type'           => 'transaction',
         ]);
 
         $response = $this->actingAs($this->admin)->getJson('/api/v1/transaction-logs');
@@ -71,18 +70,18 @@ class AuditTrailTest extends TestCase
     public function test_user_creation_logs_activity()
     {
         $response = $this->actingAs($this->admin)->postJson('/api/v1/users', [
-            'name' => 'New User',
+            'name'     => 'New User',
             'username' => 'newuser',
             'password' => 'password',
-            'role' => 'staff'
+            'role'     => 'staff',
         ]);
 
         $response->assertStatus(201);
 
         $this->assertDatabaseHas('activity_logs', [
-            'action' => LogService::ACTION_CREATED,
-            'performed_by' => $this->admin->name,
-            'target_user_name' => 'New User'
+            'action'      => LogService::ACTION_CREATED,
+            'actor_id'    => $this->admin->id,
+            'target_type' => 'user',
         ]);
     }
 
@@ -91,42 +90,40 @@ class AuditTrailTest extends TestCase
         $category = \App\Models\Category::factory()->create();
 
         $response = $this->actingAs($this->admin)->postJson('/api/v1/items', [
-            'code' => 'ITEM001',
-            'name' => 'Test Item',
-            'category_id' => $category->id,
-            'total_quantity' => 10,
-            'description' => 'Test Desc',
-            'status' => 'active',
+            'code'             => 'ITEM001',
+            'name'             => 'Test Item',
+            'category_id'      => $category->id,
+            'total_quantity'   => 10,
+            'description'      => 'Test Desc',
+            'status'           => 'active',
         ]);
 
         $response->assertStatus(201);
 
         $this->assertDatabaseHas('activity_logs', [
-            'action' => LogService::ACTION_CREATED,
-            'target_user_name' => 'Test Item'
+            'action'      => LogService::ACTION_CREATED,
+            'target_type' => 'item',
         ]);
     }
 
     public function test_activity_logs_can_be_filtered_by_action()
     {
         ActivityLog::create([
-            'actor_id' => $this->admin->id,
-            'performed_by' => $this->admin->name,
+            'actor_id'       => $this->admin->id,
             'target_user_id' => '1',
-            'target_user_name' => 'Item A',
-            'action' => LogService::ACTION_CREATED,
-            'details' => 'Created item',
-            'type' => 'activity'
+            'target_type'    => 'item',
+            'action'         => LogService::ACTION_CREATED,
+            'details'        => 'Created item',
+            'type'           => 'activity',
         ]);
 
         ActivityLog::create([
-            'actor_id' => $this->admin->id,
-            'performed_by' => $this->admin->name,
+            'actor_id'       => $this->admin->id,
             'target_user_id' => '2',
-            'target_user_name' => 'Item B',
-            'action' => LogService::ACTION_DELETED,
-            'details' => 'Deleted item',
-            'type' => 'activity'
+            'target_type'    => 'item',
+            'action'         => LogService::ACTION_DELETED,
+            'details'        => 'Deleted item',
+            'type'           => 'activity',
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -141,23 +138,21 @@ class AuditTrailTest extends TestCase
     public function test_transaction_logs_can_be_filtered_by_action()
     {
         ActivityLog::create([
-            'actor_id' => $this->admin->id,
-            'performed_by' => $this->admin->name,
+            'actor_id'       => $this->admin->id,
             'target_user_id' => '1',
-            'target_user_name' => 'Student A',
-            'action' => LogService::ACTION_BORROWED,
-            'details' => 'Borrowed items: Laptop (1)',
-            'type' => 'transaction'
+            'target_type'    => 'student',
+            'action'         => LogService::ACTION_BORROWED,
+            'details'        => 'Borrowed items: Laptop (1)',
+            'type'           => 'transaction',
         ]);
 
         ActivityLog::create([
-            'actor_id' => $this->admin->id,
-            'performed_by' => $this->admin->name,
+            'actor_id'       => $this->admin->id,
             'target_user_id' => '1',
-            'target_user_name' => 'Student A',
-            'action' => LogService::ACTION_RETURNED,
-            'details' => 'Returned items: Laptop (1)',
-            'type' => 'transaction'
+            'target_type'    => 'student',
+            'action'         => LogService::ACTION_RETURNED,
+            'details'        => 'Returned items: Laptop (1)',
+            'type'           => 'transaction',
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -184,4 +179,113 @@ class AuditTrailTest extends TestCase
 
         $response->assertStatus(422);
     }
+
+    public function test_log_shows_current_actor_name_after_update()
+    {
+        $actor = User::factory()->create(['name' => 'Original Name', 'role' => 'staff']);
+
+        ActivityLog::create([
+            'actor_id'       => $actor->id,
+            'target_user_id' => (string) $this->admin->id,
+            'target_type'    => 'user',
+            'action'         => LogService::ACTION_CREATED,
+            'details'        => 'Test log entry',
+            'type'           => 'activity',
+        ]);
+
+        // Rename the actor after the log was created
+        $actor->update(['name' => 'Updated Name']);
+
+        $response = $this->actingAs($this->admin)->getJson('/api/v1/activity-logs');
+
+        $response->assertStatus(200);
+        $logEntry = collect($response->json('data.data'))
+            ->firstWhere('actor_id', $actor->id);
+
+        $this->assertNotNull($logEntry);
+        $this->assertEquals('Updated Name', $logEntry['performed_by']);
+    }
+
+    public function test_log_shows_current_target_name_after_update()
+    {
+        $course = \App\Models\Course::factory()->create();
+        $student = Student::factory()->create(['name' => 'Original Student', 'course_id' => $course->id]);
+
+        ActivityLog::create([
+            'actor_id'       => $this->admin->id,
+            'target_user_id' => (string) $student->id,
+            'target_type'    => 'student',
+            'action'         => LogService::ACTION_BORROWED,
+            'details'        => 'Borrowed items: Laptop (1)',
+            'type'           => 'transaction',
+        ]);
+
+        // Rename the student after the log was created
+        $student->update(['name' => 'Renamed Student']);
+
+        $response = $this->actingAs($this->admin)->getJson('/api/v1/transaction-logs');
+
+        $response->assertStatus(200);
+        $logEntry = collect($response->json('data.data'))
+            ->firstWhere('target_user_id', (string) $student->id);
+
+        $this->assertNotNull($logEntry);
+        $this->assertEquals('Renamed Student', $logEntry['target_user_name']);
+    }
+
+    public function test_log_shows_actor_name_after_soft_delete()
+    {
+        $actor = User::factory()->create(['name' => 'Soon Deleted Actor', 'role' => 'staff']);
+
+        ActivityLog::create([
+            'actor_id'       => $actor->id,
+            'target_user_id' => (string) $this->admin->id,
+            'target_type'    => 'user',
+            'action'         => LogService::ACTION_CREATED,
+            'details'        => 'Test log entry',
+            'type'           => 'activity',
+        ]);
+
+        // Soft-delete the actor
+        $actor->delete();
+        $this->assertSoftDeleted($actor);
+
+        $response = $this->actingAs($this->admin)->getJson('/api/v1/activity-logs');
+
+        $response->assertStatus(200);
+        $logEntry = collect($response->json('data.data'))
+            ->firstWhere('actor_id', $actor->id);
+
+        $this->assertNotNull($logEntry);
+        $this->assertEquals('Soon Deleted Actor', $logEntry['performed_by']);
+    }
+
+    public function test_log_shows_target_student_name_after_soft_delete()
+    {
+        $course = \App\Models\Course::factory()->create();
+        $student = Student::factory()->create(['name' => 'Soon Deleted Student', 'course_id' => $course->id]);
+
+        ActivityLog::create([
+            'actor_id'       => $this->admin->id,
+            'target_user_id' => (string) $student->id,
+            'target_type'    => 'student',
+            'action'         => LogService::ACTION_BORROWED,
+            'details'        => 'Borrowed items: Laptop (1)',
+            'type'           => 'transaction',
+        ]);
+
+        // Soft-delete the student
+        $student->delete();
+        $this->assertSoftDeleted($student);
+
+        $response = $this->actingAs($this->admin)->getJson('/api/v1/transaction-logs');
+
+        $response->assertStatus(200);
+        $logEntry = collect($response->json('data.data'))
+            ->firstWhere('target_user_id', (string) $student->id);
+
+        $this->assertNotNull($logEntry);
+        $this->assertEquals('Soon Deleted Student', $logEntry['target_user_name']);
+    }
 }
+

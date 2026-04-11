@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Models\ActivityLog;
+use App\Models\Item;
+use App\Models\Student;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class LogService
@@ -21,18 +24,15 @@ class LogService
         self::ACTION_DELETED,
     ];
 
-    public function log(string $action, string $details, string $targetId, string $targetName, string $type = 'activity')
+    public function log(string $action, string $details, string $targetId, string $targetType = 'user', string $type = 'activity')
     {
-        $user = Auth::user();
-
         return ActivityLog::create([
-            'actor_id' => $user ? $user->id : null,
-            'performed_by' => $user ? $user->name : 'System',
+            'actor_id'       => Auth::id(),
             'target_user_id' => $targetId,
-            'target_user_name' => $targetName,
-            'action' => $action,
-            'details' => $details,
-            'type' => $type,
+            'target_type'    => $targetType,
+            'action'         => $action,
+            'details'        => $details,
+            'type'           => $type,
         ]);
     }
 
@@ -48,18 +48,49 @@ class LogService
 
     private function getLogs(string $type, array $filters = [])
     {
-        $query = ActivityLog::where('type', $type)->orderBy('created_at', 'desc');
+        $query = ActivityLog::with('actor')->where('type', $type)->orderBy('created_at', 'desc');
 
         if (isset($filters['search'])) {
             $search = $filters['search'];
-            $query->where(function($q) use ($search) {
+
+            $userIds = User::withTrashed()
+                ->where('name', 'like', "%{$search}%")
+                ->pluck('id')
+                ->map(fn($id) => (string) $id)
+                ->all();
+
+            $studentIds = Student::withTrashed()
+                ->where('name', 'like', "%{$search}%")
+                ->pluck('id')
+                ->map(fn($id) => (string) $id)
+                ->all();
+
+            $itemIds = Item::where('name', 'like', "%{$search}%")
+                ->pluck('id')
+                ->map(fn($id) => (string) $id)
+                ->all();
+
+            $query->where(function ($q) use ($search, $userIds, $studentIds, $itemIds) {
                 $q->where('action', 'like', "%{$search}%")
                   ->orWhere('details', 'like', "%{$search}%")
-                  ->orWhere('performed_by', 'like', "%{$search}%")
-                  ->orWhere('target_user_name', 'like', "%{$search}%");
+                  ->orWhereIn('actor_id', User::withTrashed()
+                      ->where('name', 'like', "%{$search}%")
+                      ->pluck('id'))
+                  ->orWhere(function ($sq) use ($userIds) {
+                      $sq->where('target_type', 'user')
+                         ->whereIn('target_user_id', $userIds);
+                  })
+                  ->orWhere(function ($sq) use ($studentIds) {
+                      $sq->where('target_type', 'student')
+                         ->whereIn('target_user_id', $studentIds);
+                  })
+                  ->orWhere(function ($sq) use ($itemIds) {
+                      $sq->where('target_type', 'item')
+                         ->whereIn('target_user_id', $itemIds);
+                  });
             });
         }
-        
+
         if (isset($filters['action']) && $filters['action'] !== '') {
             $query->where('action', strtolower($filters['action']));
         }
@@ -67,3 +98,4 @@ class LogService
         return $query->paginate($filters['per_page'] ?? 15);
     }
 }
+
