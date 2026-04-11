@@ -19,9 +19,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.borrowhub.R;
+import com.example.borrowhub.data.local.SessionManager;
 import com.example.borrowhub.data.local.entity.StudentEntity;
 import com.example.borrowhub.databinding.FragmentStudentManagementBinding;
 import com.example.borrowhub.view.adapter.StudentAdapter;
@@ -64,6 +66,14 @@ public class StudentManagementFragment extends Fragment implements StudentAdapte
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Guard: only admin users may access this screen
+        SessionManager sessionManager = new SessionManager(requireContext());
+        if (!SessionManager.ROLE_ADMIN.equalsIgnoreCase(sessionManager.getUserRole())) {
+            Toast.makeText(requireContext(), R.string.error_unauthorized, Toast.LENGTH_SHORT).show();
+            Navigation.findNavController(view).navigateUp();
+            return;
+        }
 
         viewModel = new ViewModelProvider(this).get(StudentManagementViewModel.class);
         studentAdapter = new StudentAdapter(this);

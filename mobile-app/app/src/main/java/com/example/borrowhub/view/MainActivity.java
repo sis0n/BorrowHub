@@ -143,6 +143,13 @@ public class MainActivity extends AppCompatActivity {
             dropdownBinding.tvProfileRole.setText(currentUser.getRole());
         }
 
+        // Apply role-based visibility: hide management items for non-admin users
+        boolean isAdmin = currentUser != null && SessionManager.ROLE_ADMIN.equalsIgnoreCase(currentUser.getRole());
+        if (!isAdmin) {
+            dropdownBinding.itemUserManagement.setVisibility(View.GONE);
+            dropdownBinding.itemStudentManagement.setVisibility(View.GONE);
+        }
+
         // Setup theme toggle state
         updateThemeUI(dropdownBinding.ivThemeIcon, dropdownBinding.tvThemeText);
 
