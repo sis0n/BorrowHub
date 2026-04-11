@@ -100,6 +100,14 @@ class LogService
             $query->where('action', strtolower($filters['action']));
         }
 
+        if (isset($filters['start_date']) && $filters['start_date'] !== '') {
+            $start = \Carbon\Carbon::parse($filters['start_date'])->startOfDay();
+            $end = isset($filters['end_date']) && $filters['end_date'] !== ''
+                ? \Carbon\Carbon::parse($filters['end_date'])->endOfDay()
+                : \Carbon\Carbon::parse($filters['start_date'])->endOfDay();
+            $query->whereBetween('created_at', [$start, $end]);
+        }
+
         return $query->paginate($filters['per_page'] ?? 15);
     }
 }
