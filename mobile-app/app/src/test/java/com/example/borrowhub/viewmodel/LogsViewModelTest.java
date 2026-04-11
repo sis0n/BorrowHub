@@ -48,9 +48,9 @@ public class LogsViewModelTest {
         activitySource = new MutableLiveData<>();
 
         when(logRepository.getTransactionLogs(isNull(), isNull(), isNull())).thenReturn(transactionSource);
-        when(logRepository.getTransactionLogs(eq("Borrowed"), isNull(), isNull())).thenReturn(transactionSource);
+        when(logRepository.getTransactionLogs(eq("borrowed"), isNull(), isNull())).thenReturn(transactionSource);
         when(logRepository.getActivityLogs(isNull(), isNull(), isNull())).thenReturn(activitySource);
-        when(logRepository.getActivityLogs(eq("Deleted"), isNull(), isNull())).thenReturn(activitySource);
+        when(logRepository.getActivityLogs(eq("deleted"), isNull(), isNull())).thenReturn(activitySource);
 
         viewModel = new LogsViewModel(application, logRepository);
     }
@@ -74,7 +74,7 @@ public class LogsViewModelTest {
         List<LogsViewModel.LogEntry> filtered = viewModel.getTransactionLogs().getValue();
         assertNotNull(filtered);
         assertEquals(1, filtered.size());
-        verify(logRepository).getTransactionLogs(eq("Borrowed"), isNull(), isNull());
+        verify(logRepository).getTransactionLogs(eq("borrowed"), isNull(), isNull());
         assertEquals("Borrowed", filtered.get(0).action);
         assertEquals("Sarah Chen", filtered.get(0).actor);
     }
@@ -92,7 +92,7 @@ public class LogsViewModelTest {
         List<LogsViewModel.LogEntry> filtered = viewModel.getActivityLogs().getValue();
         assertNotNull(filtered);
         assertEquals(1, filtered.size());
-        verify(logRepository).getActivityLogs(eq("Deleted"), isNull(), isNull());
+        verify(logRepository).getActivityLogs(eq("deleted"), isNull(), isNull());
         assertEquals("Deleted", filtered.get(0).action);
     }
 }
