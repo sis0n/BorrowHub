@@ -11,6 +11,7 @@
     <string name="login_footer_text">Authorized personnel only</string>
     <string name="login_copyright">© 2026 Computer Studies Department. All rights reserved.</string>
     <string name="error_empty_fields">Username and password cannot be empty</string>
+    <string name="error_unauthorized">Unauthorized: You do not have permission to access this page.</string>
     <string name="login_failed">Invalid Credentials: Username or password is incorrect.</string>
     <string name="login_success">Login Successful</string>
     <string name="logout_failed">Logout failed. Please try again.</string>

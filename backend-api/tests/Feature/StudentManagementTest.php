@@ -13,13 +13,47 @@ class StudentManagementTest extends TestCase
     use RefreshDatabase;
 
     protected $admin;
+    protected $staff;
     protected $course;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->admin = User::factory()->create(['role' => 'admin']);
+        $this->staff = User::factory()->create(['role' => 'staff']);
         $this->course = Course::create(['name' => 'BS Computer Science']);
+    }
+
+    public function test_staff_cannot_list_students()
+    {
+        $response = $this->actingAs($this->staff)
+            ->getJson('/api/v1/students');
+
+        $response->assertStatus(403);
+    }
+
+    public function test_staff_cannot_create_student()
+    {
+        $data = [
+            'student_number' => '2023-9999',
+            'name' => 'Unauthorized Student',
+            'course_id' => $this->course->id,
+        ];
+
+        $response = $this->actingAs($this->staff)
+            ->postJson('/api/v1/students', $data);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_staff_cannot_import_students()
+    {
+        // Empty payload is intentional; the role:admin middleware rejects the request
+        // before any payload validation occurs.
+        $response = $this->actingAs($this->staff)
+            ->postJson('/api/v1/students/import', []);
+
+        $response->assertStatus(403);
     }
 
     public function test_can_list_students_with_pagination()

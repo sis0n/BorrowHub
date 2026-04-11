@@ -84,6 +84,7 @@ public class UserRepository {
                     UserDTO userDto = data.getUser();
                     if (userDto != null) {
                         sessionManager.saveUserName(userDto.getName() != null ? userDto.getName() : "");
+                        sessionManager.saveUserRole(userDto.getRole() != null ? userDto.getRole() : "");
                         User user = convertDtoToEntity(userDto);
                         executorService.execute(() -> userDao.insertUser(user));
                     }

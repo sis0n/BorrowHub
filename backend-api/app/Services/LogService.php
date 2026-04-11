@@ -50,6 +50,11 @@ class LogService
     {
         $query = ActivityLog::with('actor')->where('type', $type)->orderBy('created_at', 'desc');
 
+        // Restrict Staff to their own activity logs; all users may see transaction logs
+        if ($type === 'activity' && Auth::user()->role !== 'admin') {
+            $query->where('actor_id', Auth::id());
+        }
+
         if (isset($filters['search'])) {
             $search = $filters['search'];
 

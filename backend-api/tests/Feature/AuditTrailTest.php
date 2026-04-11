@@ -15,11 +15,13 @@ class AuditTrailTest extends TestCase
     use RefreshDatabase;
 
     protected $admin;
+    protected $staff;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->admin = User::factory()->create(['role' => 'admin', 'name' => 'Admin User']);
+        $this->staff = User::factory()->create(['role' => 'staff', 'name' => 'Staff User']);
     }
 
     public function test_admin_can_view_activity_logs()
@@ -65,6 +67,92 @@ class AuditTrailTest extends TestCase
 
         $response->assertStatus(200)
              ->assertJsonFragment(['action' => LogService::ACTION_BORROWED]);
+    }
+
+    public function test_staff_can_view_their_own_activity_logs()
+    {
+        // Staff's own log
+        ActivityLog::create([
+            'actor_id'       => $this->staff->id,
+            'target_user_id' => (string) $this->staff->id,
+            'target_type'    => 'user',
+            'action'         => LogService::ACTION_UPDATED,
+            'details'        => 'Staff updated something',
+            'type'           => 'activity',
+        ]);
+
+        // Another user's log that staff should NOT see
+        ActivityLog::create([
+            'actor_id'       => $this->admin->id,
+            'target_user_id' => (string) $this->admin->id,
+            'target_type'    => 'user',
+            'action'         => LogService::ACTION_CREATED,
+            'details'        => 'Admin created something',
+            'type'           => 'activity',
+        ]);
+
+        $response = $this->actingAs($this->staff)->getJson('/api/v1/activity-logs');
+
+        $response->assertStatus(200);
+        $data = $response->json('data.data');
+        $this->assertCount(1, $data);
+        $this->assertEquals($this->staff->id, $data[0]['actor_id']);
+    }
+
+    public function test_staff_can_view_all_transaction_logs()
+    {
+        // Transaction log by admin
+        ActivityLog::create([
+            'actor_id'       => $this->admin->id,
+            'target_user_id' => '1',
+            'target_type'    => 'student',
+            'action'         => LogService::ACTION_BORROWED,
+            'details'        => 'Borrowed items: Laptop (1)',
+            'type'           => 'transaction',
+        ]);
+
+        // Transaction log by staff
+        ActivityLog::create([
+            'actor_id'       => $this->staff->id,
+            'target_user_id' => '2',
+            'target_type'    => 'student',
+            'action'         => LogService::ACTION_RETURNED,
+            'details'        => 'Returned items: Laptop (1)',
+            'type'           => 'transaction',
+        ]);
+
+        $response = $this->actingAs($this->staff)->getJson('/api/v1/transaction-logs');
+
+        $response->assertStatus(200);
+        $data = $response->json('data.data');
+        $this->assertCount(2, $data);
+    }
+
+    public function test_admin_can_view_all_activity_logs()
+    {
+        ActivityLog::create([
+            'actor_id'       => $this->staff->id,
+            'target_user_id' => (string) $this->staff->id,
+            'target_type'    => 'user',
+            'action'         => LogService::ACTION_UPDATED,
+            'details'        => 'Staff log',
+            'type'           => 'activity',
+        ]);
+
+        ActivityLog::create([
+            'actor_id'       => $this->admin->id,
+            'target_user_id' => (string) $this->admin->id,
+            'target_type'    => 'user',
+            'action'         => LogService::ACTION_CREATED,
+            'details'        => 'Admin log',
+            'type'           => 'activity',
+        ]);
+
+        $response = $this->actingAs($this->admin)->getJson('/api/v1/activity-logs');
+
+        $response->assertStatus(200);
+        $data = $response->json('data.data');
+        $this->assertCount(2, $data);
     }
 
     public function test_user_creation_logs_activity()
